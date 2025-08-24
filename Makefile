@@ -1,4 +1,9 @@
-.PHONY: migrate-up migrate-down create-migration
+.PHONY: migrate-up migrate-down create-migration run
+
+## run: Run the app.
+run:
+	@go run ./cmd/server
+
 
 # Get list of .sql files from the up/ directory, sorted from old to new
 MIGRATE_UP_FILES := $(shell ls migrations/up/*.sql | sort)
