@@ -8,13 +8,18 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	approutes "github.com/QuocAnh189/GoCoreFoundation/internal/app/routes"
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/configs"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 )
 
 func NewFromEnv(envPath string) (*App, error) {
-	dbConfig := db.Config{}
+	// Load configuration
+	env, err := configs.NewEnv(envPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
 
-	database, err := db.NewDatabase(&dbConfig)
+	database, err := db.NewDatabase(env.DBEnv)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %w", err)
 	}
