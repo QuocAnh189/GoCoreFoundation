@@ -15,7 +15,8 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	log.Println("Initializing services")
 
 	log.Println("> userSvc...")
-	var userSvc = users.NewService(res.Db)
+	userRepo := users.NewUserRepository(res.Db)
+	var userSvc = users.NewService(userRepo)
 
 	svcs := ServiceContainer{
 		UserService: userSvc,

@@ -16,12 +16,12 @@ func SetUpHttpRoutes(server *http.Server, res *resource.AppResource, services *a
 	mux := http.NewServeMux()
 
 	u := users.NewController(services.UserService)
-	mux.HandleFunc("GET /users", u.GetUsers)
-	mux.HandleFunc("GET /users/{id}", u.GetUser)
-	mux.HandleFunc("GET /users/profile", u.GetProfile)
-	mux.HandleFunc("POST /users", u.CreateUser)
-	mux.HandleFunc("PUT /users/{id}", u.UpdateUser)
-	mux.HandleFunc("DELETE /users/{id}", u.DeleteUser)
+	mux.HandleFunc("GET /users", u.HandleGetUsers)
+	mux.HandleFunc("GET /users/{id}", u.HandleGetUser)
+	mux.HandleFunc("GET /users/profile", u.HandleGetProfile)
+	mux.HandleFunc("POST /users", u.HandleCreateUser)
+	mux.HandleFunc("PUT /users/{id}", u.HandleUpdateUser)
+	mux.HandleFunc("DELETE /users/{id}", u.HandleDeleteUser)
 
 	// Assign the mux to the server's Handler
 	server.Handler = mux
