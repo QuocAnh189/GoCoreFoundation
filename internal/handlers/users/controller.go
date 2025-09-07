@@ -2,13 +2,10 @@ package users
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/QuocAnh189/GoCoreFoundation/internal/constants"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
@@ -23,70 +20,77 @@ func NewController(service *UserService) *UserController {
 }
 
 func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	role := r.URL.Query().Get("role")
-	var opts []db.FindOption
-	if role != "" {
-		opts = append(opts, db.WithQuery(db.NewQuery("role = ?", constants.Role(role))))
+	var req ListUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteJson(w, nil, ErrInvalidParameter)
+		return
 	}
 
-	users, err := u.service.GetListUser(ctx, opts...)
+	users, pagination, err := u.service.ListUsers(r.Context(), &req)
 	if err != nil {
 		response.WriteJson(w, nil, err)
 		return
 	}
-	response.WriteJson(w, users, nil)
+
+	res := &ListUserResponse{
+		Users:      users,
+		Pagination: pagination,
+	}
+
+	response.WriteJson(w, res, nil)
 }
 
 func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	idStr := strings.TrimPrefix(r.URL.Path, "/users/")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		response.WriteJson(w, nil, errors.New("invalid user ID"))
+		response.WriteJson(w, nil, ErrInvalidUserID)
 		return
 	}
 
-	user, err := u.service.GetUserByID(ctx, id)
+	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		response.WriteJson(w, nil, err)
-		return
+		var appErr response.AppError
+		switch err {
+		case ErrUserNotFound:
+			appErr.Message = "User not found"
+			appErr.Debug = appErr.Error()
+			appErr.Status = status.NOT_FOUND
+			response.WriteJson(w, nil, &appErr)
+			return
+		default:
+			response.WriteJson(w, nil, err)
+			return
+		}
 	}
-	response.WriteJson(w, user, nil)
+
+	res := &GetUserResponse{
+		User: user,
+	}
+
+	response.WriteJson(w, res, nil)
 }
 
 func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	userID, ok := ctx.Value("user_id").(int64)
-	if !ok || userID == 0 {
-		response.WriteJson(w, nil, errors.New("unauthorized: user ID not found in context"))
-		return
-	}
+	var userID int64
 
-	user, err := u.service.GetUserByID(ctx, userID)
+	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		response.WriteJson(w, nil, err)
 		return
 	}
+
 	response.WriteJson(w, user, nil)
 }
 
 func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		response.WriteJson(w, nil, errors.New("invalid JSON body"))
+	var req CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteJson(w, nil, ErrInvalidParameter)
 		return
 	}
-	user.ID = 0 // Ensure ID is not set (auto-increment)
 
-	userID, ok := ctx.Value("user_id").(int)
-	if ok {
-		user.CreateID = &userID
-		user.ModifyID = &userID
-	}
-
-	if err := u.service.CreateUser(ctx, &user); err != nil {
+	user, err := u.service.CreateUser(r.Context(), &req)
+	if err != nil {
 		response.WriteJson(w, nil, err)
 		return
 	}
@@ -94,45 +98,38 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 }
 
 func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	idStr := strings.TrimPrefix(r.URL.Path, "/users/")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	var req UpdateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteJson(w, nil, ErrInvalidParameter)
+		return
+	}
+
+	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		response.WriteJson(w, nil, errors.New("invalid user ID"))
+		response.WriteJson(w, nil, ErrInvalidUserID)
 		return
 	}
+	req.ID = userID
 
-	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		response.WriteJson(w, nil, errors.New("invalid JSON body"))
-		return
-	}
-	user.ID = id
-
-	userID, ok := ctx.Value("user_id").(int)
-	if ok {
-		user.ModifyID = &userID
-	}
-
-	if err := u.service.UpdateUser(ctx, &user); err != nil {
+	if err := u.service.UpdateUser(r.Context(), &req); err != nil {
 		response.WriteJson(w, nil, err)
 		return
 	}
-	response.WriteJson(w, user, nil)
+	response.WriteJson(w, nil, nil)
 }
 
 func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	idStr := strings.TrimPrefix(r.URL.Path, "/users/")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		response.WriteJson(w, nil, errors.New("invalid user ID"))
+		response.WriteJson(w, nil, ErrInvalidUserID)
 		return
 	}
 
-	if err := u.service.DeleteUser(ctx, id); err != nil {
+	err = u.service.DeleteUser(r.Context(), userID)
+	if err != nil {
 		response.WriteJson(w, nil, err)
 		return
 	}
-	response.WriteJson(w, map[string]string{"message": "user deleted"}, nil)
+
+	response.WriteJson(w, "Delete user success", nil)
 }

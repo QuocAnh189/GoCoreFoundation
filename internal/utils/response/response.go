@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/QuocAnh189/GoCoreFoundation/internal/constants"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 )
 
 func WriteJson(w http.ResponseWriter, data any, err error) {
@@ -34,9 +34,11 @@ func WriteJson(w http.ResponseWriter, data any, err error) {
 		if errors.As(err, &appErr) {
 			payload["mmessage"] = appErr.Message
 			payload["status"] = appErr.Status
+			payload["debug"] = appErr.Debug
 		} else {
 			payload["mmessage"] = err.Error()
-			payload["status"] = constants.ERROR
+			payload["status"] = status.ERROR
+			payload["debug"] = err.Error()
 		}
 
 	} else {
@@ -45,7 +47,7 @@ func WriteJson(w http.ResponseWriter, data any, err error) {
 
 	// Default to not set if not set
 	if payload["status"] == 0 {
-		payload["status"] = constants.UNKNOW
+		payload["status"] = status.UNKNOW
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
