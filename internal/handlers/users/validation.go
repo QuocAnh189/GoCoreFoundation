@@ -1,32 +1,44 @@
 package users
 
 import (
-	"context"
-	"errors"
 	"regexp"
 )
 
+func ValidateCreateUserRequest(req *CreateUserRequest) error {
+	if req.FirstName == "" {
+		return ErrMissingFirstName
+	}
+
+	if req.LastName == "" {
+		return ErrMissingLastName
+	}
+
+	if req.Phone == "" {
+		return ErrMissingPhone
+	}
+	if req.Email == "" {
+		return ErrMissingEmail
+	}
+
+	if !isValidEmail(req.Email) {
+		return ErrInvalidEmail
+	}
+
+	if req.Role != "" && !isValidRole(req.Role) {
+		return ErrInvalidRole
+	}
+
+	return nil
+}
+
 // validateUser performs validation on user data.
-func (s *UserService) validateUser(ctx context.Context, user *User, isCreate bool) error {
-	if isCreate && user.ID == 0 {
-		return errors.New("ID is required")
-	}
-	if user.FirstName == "" {
-		return errors.New("first_name is required")
-	}
-	if user.Phone == "" {
-		return errors.New("phone is required")
-	}
-	if user.Email == "" {
-		return errors.New("email is required")
+func ValidateUpdateUserRequest(req *UpdateUserRequest) error {
+	if req.Email != nil && !isValidEmail(*req.Email) {
+		return ErrInvalidEmail
 	}
 
-	if !isValidEmail(user.Email) {
-		return errors.New("invalid email format: " + user.Email)
-	}
-
-	if !isValidRole(user.Role) {
-		return errors.New("invalid role: " + string(user.Role))
+	if req.Role != nil && !isValidRole(*req.Role) {
+		return ErrInvalidRole
 	}
 
 	return nil
@@ -40,7 +52,7 @@ func isValidEmail(email string) bool {
 }
 
 func isValidRole(role Role) bool {
-	validRoles := []Role{"admin", "user", "guest"}
+	validRoles := []Role{RoleAdmin, RoleUser, RoleGuest}
 	for _, validRole := range validRoles {
 		if role == validRole {
 			return true
@@ -49,8 +61,8 @@ func isValidRole(role Role) bool {
 	return false
 }
 
-func isValidStatus(status string) bool {
-	validStatuses := []string{"active", "inactive"}
+func isValidStatus(status Status) bool {
+	validStatuses := []Status{StatusActive, StatusInactive, StatusBanned}
 	for _, validStatus := range validStatuses {
 		if status == validStatus {
 			return true

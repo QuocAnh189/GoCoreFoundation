@@ -40,11 +40,21 @@ func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*User, 
 }
 
 func (s *UserService) CreateUser(ctx context.Context, req *CreateUserRequest) (*User, error) {
+	err := ValidateCreateUserRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	dto := BuildCreateUserDTO(req)
 	return s.repo.Create(ctx, dto)
 }
 
-func (s *UserService) UpdateUser(ctx context.Context, req *UpdateUserRequest) error {
+func (s *UserService) UpdateUser(ctx context.Context, req *UpdateUserRequest) (*User, error) {
+	err := ValidateUpdateUserRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	dto := BuildUpdateUserDTO(req)
 	return s.repo.Update(ctx, dto)
 }

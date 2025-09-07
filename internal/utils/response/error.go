@@ -7,11 +7,12 @@ import (
 )
 
 type AppError struct {
-	Message string
-	Debug   string
-	Status  status.AppStatusCode
+	Message   string
+	Debug     string
+	Status    status.AppStatusCode
+	BaseError error
 }
 
 func (e *AppError) Error() string {
-	return fmt.Sprintf("MError: %s", e.Message)
+	return fmt.Sprintf("Error: %s", e.BaseError.Error())
 }

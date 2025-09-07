@@ -16,7 +16,7 @@ type IRepository interface {
 	FindByID(ctx context.Context, id int64) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	Create(ctx context.Context, dto *CreateUserDTO) (*User, error)
-	Update(ctx context.Context, dto *UpdateUserDTO) error
+	Update(ctx context.Context, dto *UpdateUserDTO) (*User, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -225,8 +225,8 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, 
 // Create inserts a new user into the database.
 func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User, error) {
 	query := `
-		INSERT INTO users (first_name, middle_name, last_name, phone, email, role)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO users (first_name, middle_name, last_name, phone, email, role, status)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
 	result, err := r.db.Exec(ctx, query,
 		dto.FirstName,
@@ -235,6 +235,7 @@ func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User,
 		dto.Phone,
 		dto.Email,
 		dto.Role,
+		StatusActive,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %v", err)
@@ -249,7 +250,7 @@ func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User,
 }
 
 // Update updates an existing user.
-func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) error {
+func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) (*User, error) {
 	query := `
 		UPDATE users
 		SET first_name = COALESCE(?, first_name),
@@ -258,7 +259,7 @@ func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) error {
 			phone = COALESCE(?, phone),
 			email = COALESCE(?, email),
 			role = COALESCE(?, role),
-			status = COALESCE(?, status),
+			status = COALESCE(?, status)
 		WHERE id = ?
 	`
 	_, err := r.db.Exec(ctx, query,
@@ -272,10 +273,10 @@ func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) error {
 		dto.ID,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to update user: %v", err)
+		return nil, fmt.Errorf("failed to update user: %v", err)
 	}
 
-	return nil
+	return r.FindByID(ctx, dto.ID)
 }
 
 // Delete removes a user by ID.

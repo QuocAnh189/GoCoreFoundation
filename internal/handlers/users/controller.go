@@ -53,14 +53,13 @@ func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case ErrUserNotFound:
 			appErr.Message = "User not found"
-			appErr.Debug = appErr.Error()
+			appErr.Debug = err.Error()
 			appErr.Status = status.NOT_FOUND
 			response.WriteJson(w, nil, &appErr)
-			return
 		default:
 			response.WriteJson(w, nil, err)
-			return
 		}
+		return
 	}
 
 	res := &GetUserResponse{
@@ -91,10 +90,25 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 
 	user, err := u.service.CreateUser(r.Context(), &req)
 	if err != nil {
-		response.WriteJson(w, nil, err)
+		var appErr response.AppError
+		appErr.BaseError = err
+		switch err {
+		case ErrMissingFirstName, ErrMissingLastName, ErrMissingPhone, ErrMissingEmail, ErrInvalidEmail, ErrInvalidRole:
+			appErr.Message = "Invalid params"
+			appErr.Debug = appErr.Error()
+			appErr.Status = status.BAD_REQUEST
+			response.WriteJson(w, nil, &appErr)
+		default:
+			response.WriteJson(w, nil, err)
+		}
 		return
 	}
-	response.WriteJson(w, user, nil)
+
+	res := &CreateUserResponse{
+		User: user,
+	}
+
+	response.WriteJson(w, res, nil)
 }
 
 func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -111,11 +125,27 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 	}
 	req.ID = userID
 
-	if err := u.service.UpdateUser(r.Context(), &req); err != nil {
-		response.WriteJson(w, nil, err)
+	user, err := u.service.UpdateUser(r.Context(), &req)
+	if err != nil {
+		var appErr response.AppError
+		appErr.BaseError = err
+		switch err {
+		case ErrInvalidEmail, ErrInvalidRole:
+			appErr.Message = "Invalid params"
+			appErr.Debug = appErr.Error()
+			appErr.Status = status.BAD_REQUEST
+			response.WriteJson(w, nil, &appErr)
+		default:
+			response.WriteJson(w, nil, err)
+		}
 		return
 	}
-	response.WriteJson(w, nil, nil)
+
+	res := &UpdateUserResponse{
+		User: user,
+	}
+
+	response.WriteJson(w, res, nil)
 }
 
 func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
