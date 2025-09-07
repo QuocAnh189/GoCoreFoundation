@@ -82,6 +82,8 @@ func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListU
 	if req.TakeAll {
 		pagination.Size = total
 		pagination.Skip = 0
+		pagination.Page = 1
+		pagination.TotalPages = 1
 	}
 
 	// Add sorting

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
@@ -21,8 +22,9 @@ func NewController(service *UserService) *UserController {
 
 func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 	var req ListUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.WriteJson(w, nil, ErrInvalidParameter)
+
+	if err := bind.ParseQuery(r, &req); err != nil {
+		response.WriteJson(w, nil, response.ErrInvalidParams())
 		return
 	}
 
@@ -43,22 +45,22 @@ func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) 
 func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		response.WriteJson(w, nil, ErrInvalidUserID)
+		response.WriteJson(w, nil, response.ErrInvalidParseString(r.PathValue("id")))
 		return
 	}
 
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		var appErr response.AppError
+		appErr.BaseError = err
 		switch err {
 		case ErrUserNotFound:
 			appErr.Message = "User not found"
-			appErr.Debug = err.Error()
 			appErr.Status = status.NOT_FOUND
-			response.WriteJson(w, nil, &appErr)
 		default:
-			response.WriteJson(w, nil, err)
+			appErr.Message = "Something went wrong"
 		}
+		response.WriteJson(w, nil, &appErr)
 		return
 	}
 
@@ -84,7 +86,7 @@ func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request
 func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.WriteJson(w, nil, ErrInvalidParameter)
+		response.WriteJson(w, nil, response.ErrInvalidParams())
 		return
 	}
 
@@ -95,12 +97,11 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 		switch err {
 		case ErrMissingFirstName, ErrMissingLastName, ErrMissingPhone, ErrMissingEmail, ErrInvalidEmail, ErrInvalidRole:
 			appErr.Message = "Invalid params"
-			appErr.Debug = appErr.Error()
 			appErr.Status = status.BAD_REQUEST
-			response.WriteJson(w, nil, &appErr)
 		default:
-			response.WriteJson(w, nil, err)
+			appErr.Message = "Something went wrong"
 		}
+		response.WriteJson(w, nil, &appErr)
 		return
 	}
 
@@ -114,13 +115,13 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.WriteJson(w, nil, ErrInvalidParameter)
+		response.WriteJson(w, nil, response.ErrInvalidParams())
 		return
 	}
 
 	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		response.WriteJson(w, nil, ErrInvalidUserID)
+		response.WriteJson(w, nil, response.ErrInvalidParseString(r.PathValue("id")))
 		return
 	}
 	req.ID = userID
@@ -132,12 +133,11 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 		switch err {
 		case ErrInvalidEmail, ErrInvalidRole:
 			appErr.Message = "Invalid params"
-			appErr.Debug = appErr.Error()
 			appErr.Status = status.BAD_REQUEST
-			response.WriteJson(w, nil, &appErr)
 		default:
-			response.WriteJson(w, nil, err)
+			appErr.Message = "Something went wrong"
 		}
+		response.WriteJson(w, nil, &appErr)
 		return
 	}
 
@@ -151,7 +151,7 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		response.WriteJson(w, nil, ErrInvalidUserID)
+		response.WriteJson(w, nil, response.ErrInvalidParseString(r.PathValue("id")))
 		return
 	}
 
