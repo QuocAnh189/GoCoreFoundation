@@ -7,6 +7,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	middleware "github.com/QuocAnh189/GoCoreFoundation/internal/middlewares"
 )
 
 func SetUpHttpRoutes(server *http.Server, res *resource.AppResource, services *appservices.ServiceContainer) {
@@ -25,4 +26,5 @@ func SetUpHttpRoutes(server *http.Server, res *resource.AppResource, services *a
 
 	// Assign the mux to the server's Handler
 	server.Handler = mux
+	server.Handler = middleware.LogRequestMiddleware(server.Handler)
 }

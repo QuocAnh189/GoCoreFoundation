@@ -49,6 +49,8 @@ func (a *App) Init() error {
 		Addr: ":8080",
 	}
 
+	// a.setupMiddleware(a.Server)
+
 	return nil
 }
 
@@ -60,3 +62,17 @@ func (a *App) Start() error {
 func (a *App) Close() error {
 	return a.database.Close()
 }
+
+// type Middleware func(http.Handler) http.Handler
+
+// func (a *App) setupMiddleware(server *http.Server) {
+// 	log.Println("Registering middlewares...")
+
+// 	middlewares := []Middleware{
+// 		middleware.LogRequestMiddleware,
+// 	}
+
+// 	for _, m := range middlewares {
+// 		server.Handler = m(server.Handler)
+// 	}
+// }
