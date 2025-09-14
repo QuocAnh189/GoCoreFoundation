@@ -11,7 +11,7 @@ type CreateUserDTO struct {
 }
 
 type UpdateUserDTO struct {
-	ID         int64   `json:"id"`
+	ID         string  `json:"id"`
 	FirstName  *string `json:"first_name,omitempty"`
 	MiddleName *string `json:"middle_name,omitempty"`
 	LastName   *string `json:"last_name,omitempty"`

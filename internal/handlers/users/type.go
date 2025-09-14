@@ -1,20 +1,24 @@
 package users
 
-import "github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
+import (
+	"time"
+
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
+)
 
 type User struct {
-	ID         int64   `json:"id"`
-	FirstName  string  `json:"first_name"`
-	MiddleName *string `json:"middle_name"`
-	LastName   string  `json:"last_name"`
-	Phone      string  `json:"phone"`
-	Email      string  `json:"email"`
-	Role       Role    `json:"role"`
-	Status     string  `json:"status"`
-	CreateID   *int64  `json:"create_id"`
-	CreateDT   *string `json:"create_dt"`
-	ModifyID   *int64  `json:"modify_id"`
-	ModifyDT   *string `json:"modify_dt"`
+	ID         string    `json:"id"`
+	FirstName  string    `json:"first_name"`
+	MiddleName *string   `json:"middle_name"`
+	LastName   string    `json:"last_name"`
+	Phone      string    `json:"phone"`
+	Email      string    `json:"email"`
+	Role       Role      `json:"role"`
+	Status     string    `json:"status"`
+	CreateID   *int64    `json:"create_id"`
+	CreateDT   time.Time `json:"create_dt"`
+	ModifyID   *int64    `json:"modify_id"`
+	ModifyDT   time.Time `json:"modify_dt"`
 }
 
 type ListUserRequest struct {
@@ -49,7 +53,7 @@ type CreateUserResponse struct {
 }
 
 type UpdateUserRequest struct {
-	ID         int64   `json:"-"`
+	ID         string  `json:"-"`
 	FirstName  *string `json:"first_name",omitempty"`
 	MiddleName *string `json:"middle_name",omitempty"`
 	LastName   *string `json:"last_name",omitempty"`

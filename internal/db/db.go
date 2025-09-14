@@ -40,7 +40,7 @@ func NewDatabase(config *Config) (*Database, error) {
 	mysqlCfg.DBName = config.Name
 	mysqlCfg.AllowNativePasswords = true
 	mysqlCfg.Net = "tcp"
-	mysqlCfg.ParseTime = false
+	mysqlCfg.ParseTime = true
 
 	db, err := sql.Open("mysql", mysqlCfg.FormatDSN())
 	if err != nil {

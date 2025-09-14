@@ -18,7 +18,7 @@ func (e *AppError) Error() string {
 
 func ErrInvalidParams() *AppError {
 	return &AppError{
-		Message:   "Invalid Params",
+		Message:   "Invalid params",
 		Status:    status.BAD_REQUEST,
 		BaseError: fmt.Errorf("invalid parameters"),
 	}

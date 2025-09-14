@@ -24,7 +24,7 @@ func (s *UserService) ListUsers(ctx context.Context, req *ListUserRequest) ([]*U
 	return resp.Users, resp.Pagination, nil
 }
 
-func (s *UserService) GetUserByID(ctx context.Context, id int64) (*User, error) {
+func (s *UserService) GetUserByID(ctx context.Context, id string) (*User, error) {
 	result, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -59,6 +59,6 @@ func (s *UserService) UpdateUser(ctx context.Context, req *UpdateUserRequest) (*
 	return s.repo.Update(ctx, dto)
 }
 
-func (s *UserService) DeleteUser(ctx context.Context, id int64) error {
+func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
 }

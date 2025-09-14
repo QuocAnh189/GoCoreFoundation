@@ -3,7 +3,6 @@ package users
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
@@ -43,11 +42,7 @@ func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) 
 }
 
 func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		response.WriteJson(w, nil, response.ErrInvalidParseString(r.PathValue("id")))
-		return
-	}
+	userID := r.PathValue("id")
 
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
@@ -72,7 +67,7 @@ func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
-	var userID int64
+	var userID string
 
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
@@ -119,12 +114,7 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		response.WriteJson(w, nil, response.ErrInvalidParseString(r.PathValue("id")))
-		return
-	}
-	req.ID = userID
+	req.ID = r.PathValue("id")
 
 	user, err := u.service.UpdateUser(r.Context(), &req)
 	if err != nil {
@@ -149,13 +139,9 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 }
 
 func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		response.WriteJson(w, nil, response.ErrInvalidParseString(r.PathValue("id")))
-		return
-	}
+	userID := r.PathValue("id")
 
-	err = u.service.DeleteUser(r.Context(), userID)
+	err := u.service.DeleteUser(r.Context(), userID)
 	if err != nil {
 		response.WriteJson(w, nil, err)
 		return

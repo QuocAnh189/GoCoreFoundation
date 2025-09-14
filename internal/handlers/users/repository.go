@@ -8,16 +8,17 @@ import (
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
 )
 
 // IRepository defines the user repository interface.
 type IRepository interface {
 	List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error)
-	FindByID(ctx context.Context, id int64) (*User, error)
+	FindByID(ctx context.Context, id string) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	Create(ctx context.Context, dto *CreateUserDTO) (*User, error)
 	Update(ctx context.Context, dto *UpdateUserDTO) (*User, error)
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, id string) error
 }
 
 // UserRepository implements the IRepository interface.
@@ -33,7 +34,7 @@ func NewUserRepository(db db.IDatabase) *UserRepository {
 }
 
 type sqlUser struct {
-	ID         int64
+	ID         string
 	FirstName  sql.NullString
 	MiddleName sql.NullString
 	LastName   sql.NullString
@@ -42,9 +43,9 @@ type sqlUser struct {
 	Role       sql.NullString
 	Status     sql.NullString
 	CreateID   sql.NullInt64
-	CreateDT   sql.NullString
+	CreateDT   sql.NullTime
 	ModifyID   sql.NullInt64
-	ModifyDT   sql.NullString
+	ModifyDT   sql.NullTime
 }
 
 // List retrieves a paginated list of users with optional search and sorting.
@@ -129,9 +130,9 @@ func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListU
 			Status:     su.Status.String,
 			Role:       Role(su.Role.String),
 			CreateID:   &su.CreateID.Int64,
-			CreateDT:   &su.CreateDT.String,
+			CreateDT:   su.CreateDT.Time,
 			ModifyID:   &su.ModifyID.Int64,
-			ModifyDT:   &su.ModifyDT.String,
+			ModifyDT:   su.ModifyDT.Time,
 		}
 		users = append(users, user)
 	}
@@ -143,7 +144,7 @@ func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListU
 }
 
 // FindByID retrieves a user by ID.
-func (r *UserRepository) FindByID(ctx context.Context, id int64) (*User, error) {
+func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error) {
 	query := `
 		SELECT id, first_name, middle_name, last_name, phone, email, 
 		role, status, create_id, create_dt, modify_id, modify_dt
@@ -175,9 +176,9 @@ func (r *UserRepository) FindByID(ctx context.Context, id int64) (*User, error) 
 		Status:     su.Status.String,
 		Role:       Role(su.Role.String),
 		CreateID:   &su.CreateID.Int64,
-		CreateDT:   &su.CreateDT.String,
+		CreateDT:   su.CreateDT.Time,
 		ModifyID:   &su.ModifyID.Int64,
-		ModifyDT:   &su.ModifyDT.String,
+		ModifyDT:   su.ModifyDT.Time,
 	}
 
 	return user, nil
@@ -216,9 +217,9 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, 
 		Status:     su.Status.String,
 		Role:       Role(su.Role.String),
 		CreateID:   &su.CreateID.Int64,
-		CreateDT:   &su.CreateDT.String,
+		CreateDT:   su.CreateDT.Time,
 		ModifyID:   &su.ModifyID.Int64,
-		ModifyDT:   &su.ModifyDT.String,
+		ModifyDT:   su.ModifyDT.Time,
 	}
 
 	return user, nil
@@ -226,11 +227,17 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, 
 
 // Create inserts a new user into the database.
 func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User, error) {
+	uuid, err := uuid.GenerateUUIDV7()
+	if uuid == "" {
+		return nil, fmt.Errorf("failed to generate UUIDv7: %v", err)
+	}
+
 	query := `
-		INSERT INTO users (first_name, middle_name, last_name, phone, email, role, status)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO users (id, first_name, middle_name, last_name, phone, email, role, status)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	result, err := r.db.Exec(ctx, query,
+	_, err = r.db.Exec(ctx, query,
+		uuid,
 		dto.FirstName,
 		dto.MiddleName,
 		dto.LastName,
@@ -243,12 +250,7 @@ func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User,
 		return nil, fmt.Errorf("failed to create user: %v", err)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve last insert ID: %v", err)
-	}
-
-	return r.FindByID(ctx, id)
+	return r.FindByID(ctx, uuid)
 }
 
 // Update updates an existing user.
@@ -282,7 +284,7 @@ func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) (*User,
 }
 
 // Delete removes a user by ID.
-func (r *UserRepository) Delete(ctx context.Context, id int64) error {
+func (r *UserRepository) Delete(ctx context.Context, id string) error {
 	query := `DELETE FROM users WHERE id = ?`
 	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
