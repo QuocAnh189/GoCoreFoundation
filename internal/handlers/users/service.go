@@ -60,5 +60,9 @@ func (s *UserService) UpdateUser(ctx context.Context, req *UpdateUserRequest) (*
 }
 
 func (s *UserService) DeleteUser(ctx context.Context, id string) error {
+	if id == "" {
+		return ErrInvalidUserID
+	}
+
 	return s.repo.Delete(ctx, id)
 }

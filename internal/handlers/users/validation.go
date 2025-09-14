@@ -33,6 +33,10 @@ func ValidateCreateUserRequest(req *CreateUserRequest) error {
 
 // validateUser performs validation on user data.
 func ValidateUpdateUserRequest(req *UpdateUserRequest) error {
+	if req.UID == "" {
+		return ErrInvalidUserID
+	}
+
 	if req.Email != nil && !isValidEmail(*req.Email) {
 		return ErrInvalidEmail
 	}

@@ -53,7 +53,7 @@ type CreateUserResponse struct {
 }
 
 type UpdateUserRequest struct {
-	ID         string  `json:"-"`
+	UID        string  `json:"uid"`
 	FirstName  *string `json:"first_name",omitempty"`
 	MiddleName *string `json:"middle_name",omitempty"`
 	LastName   *string `json:"last_name",omitempty"`
@@ -65,4 +65,8 @@ type UpdateUserRequest struct {
 
 type UpdateUserResponse struct {
 	User *User `json:"result"`
+}
+
+type DeleteUserRequest struct {
+	UserID string `json:"uid"`
 }

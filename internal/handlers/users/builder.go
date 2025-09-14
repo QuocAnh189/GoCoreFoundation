@@ -18,7 +18,7 @@ func BuildCreateUserDTO(req *CreateUserRequest) *CreateUserDTO {
 
 func BuildUpdateUserDTO(req *UpdateUserRequest) *UpdateUserDTO {
 	return &UpdateUserDTO{
-		ID:         req.ID,
+		ID:         req.UID,
 		FirstName:  req.FirstName,
 		MiddleName: req.MiddleName,
 		LastName:   req.LastName,
