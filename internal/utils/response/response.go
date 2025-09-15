@@ -37,7 +37,7 @@ func WriteJson(w http.ResponseWriter, data any, err error) {
 			payload["debug"] = appErr.Error()
 		} else {
 			payload["mmessage"] = err.Error()
-			payload["status"] = status.ERROR
+			payload["status"] = status.INTERNAL
 			payload["debug"] = err.Error()
 		}
 

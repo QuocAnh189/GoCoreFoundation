@@ -7,5 +7,5 @@ const (
 	SUCCESS     AppStatusCode = 200
 	BAD_REQUEST AppStatusCode = 400
 	NOT_FOUND   AppStatusCode = 404
-	ERROR       AppStatusCode = 500
+	INTERNAL    AppStatusCode = 500
 )

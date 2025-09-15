@@ -2,7 +2,6 @@ package lingos
 
 import (
 	"context"
-	"log"
 )
 
 type Service struct {
@@ -19,7 +18,6 @@ func (s *Service) CreateLingo(ctx context.Context, l Lingo) (*Lingo, error) {
 }
 
 func (s *Service) GetLingo(ctx context.Context, lang Lang, key string) (*Lingo, error) {
-	log.Println("GetLingo called with lang:", lang, "key:", key)
 	return s.repo.GetByLangAndKey(ctx, lang, key)
 }
 

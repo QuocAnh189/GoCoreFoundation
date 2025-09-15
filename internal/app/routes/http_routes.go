@@ -26,7 +26,7 @@ func SetUpHttpRoutes(server *http.Server, res *resource.AppResource, services *a
 	mux.HandleFunc("POST /lingos/delete", l.HandleDeleteLingo)
 
 	//user
-	u := users.NewController(services.UserService)
+	u := users.NewController(res, services.UserService)
 	mux.HandleFunc("GET /users/list", u.HandleGetUsers)
 	mux.HandleFunc("GET /users/{id}", u.HandleGetUser)
 	mux.HandleFunc("GET /users/profile", u.HandleGetProfile)

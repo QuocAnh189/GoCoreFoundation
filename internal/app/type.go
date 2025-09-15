@@ -11,12 +11,12 @@ import (
 type App struct {
 	Server   *http.Server
 	Services *appsvcs.ServiceContainer
-	database db.IDatabase
-	resource *resource.AppResource
+	Database db.IDatabase
+	Resource *resource.AppResource
 }
 
 func NewApp(resource *resource.AppResource) *App {
 	return &App{
-		resource: resource,
+		Resource: resource,
 	}
 }

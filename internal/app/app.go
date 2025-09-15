@@ -33,13 +33,15 @@ func NewFromEnv(envPath string) (*App, error) {
 		return nil, fmt.Errorf("failed to init app: %w", err)
 	}
 
+	resource.LingoSvc = app.Services.LingoService
+
 	approutes.SetUpHttpRoutes(app.Server, &resource, app.Services)
 
 	return app, nil
 }
 
 func (a *App) Init() error {
-	services, err := appservices.SetUpAppServices(a.resource)
+	services, err := appservices.SetUpAppServices(a.Resource)
 	if err != nil {
 		return fmt.Errorf("failed to setup services: %w", err)
 	}
@@ -60,7 +62,7 @@ func (a *App) Start() error {
 }
 
 func (a *App) Close() error {
-	return a.database.Close()
+	return a.Database.Close()
 }
 
 // type Middleware func(http.Handler) http.Handler

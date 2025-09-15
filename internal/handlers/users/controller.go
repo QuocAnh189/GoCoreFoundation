@@ -4,18 +4,20 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
 type UserController struct {
-	service *UserService
+	appResources *resource.AppResource
+	service      *UserService
 }
 
-func NewController(service *UserService) *UserController {
+func NewController(appResources *resource.AppResource, service *UserService) *UserController {
 	return &UserController{
-		service: service,
+		appResources: appResources,
+		service:      service,
 	}
 }
 
@@ -50,13 +52,21 @@ func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		switch err {
-		case ErrUserNotFound:
-			appErr.Message = "User not found"
-			appErr.Status = status.NOT_FOUND
-		default:
-			appErr.Message = "Something went wrong"
+		appErr.Status = UserErrStatusMap[err]
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		if err != nil {
+			appErr.BaseError = err
+			appErr.Message = err.Error()
 		}
+
+		if errMsg == nil {
+			appErr.Message = "Update message later ..."
+			response.WriteJson(w, nil, &appErr)
+			return
+		}
+
+		appErr.Message = errMsg.Val
+
 		response.WriteJson(w, nil, &appErr)
 		return
 	}
@@ -74,7 +84,24 @@ func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request
 
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		response.WriteJson(w, nil, err)
+		var appErr response.AppError
+		appErr.BaseError = err
+		appErr.Status = UserErrStatusMap[err]
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		if err != nil {
+			appErr.BaseError = err
+			appErr.Message = err.Error()
+		}
+
+		if errMsg == nil {
+			appErr.Message = "Update message later ..."
+			response.WriteJson(w, nil, &appErr)
+			return
+		}
+
+		appErr.Message = errMsg.Val
+
+		response.WriteJson(w, nil, &appErr)
 		return
 	}
 
@@ -93,13 +120,21 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		switch err {
-		case ErrMissingFirstName, ErrMissingLastName, ErrMissingPhone, ErrMissingEmail, ErrInvalidEmail, ErrInvalidRole:
-			appErr.Message = "Invalid params"
-			appErr.Status = status.BAD_REQUEST
-		default:
-			appErr.Message = "Something went wrong"
+		appErr.Status = UserErrStatusMap[err]
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		if err != nil {
+			appErr.BaseError = err
+			appErr.Message = err.Error()
 		}
+
+		if errMsg == nil {
+			appErr.Message = "Update message later ..."
+			response.WriteJson(w, nil, &appErr)
+			return
+		}
+
+		appErr.Message = errMsg.Val
+
 		response.WriteJson(w, nil, &appErr)
 		return
 	}
@@ -123,16 +158,21 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		switch err {
-		case ErrInvalidEmail, ErrInvalidRole:
-			appErr.Message = "Invalid params"
-			appErr.Status = status.BAD_REQUEST
-		case ErrInvalidUserID:
-			appErr.Message = "Invalid user ID"
-			appErr.Status = status.BAD_REQUEST
-		default:
-			appErr.Message = "Something went wrong"
+		appErr.Status = UserErrStatusMap[err]
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		if err != nil {
+			appErr.BaseError = err
+			appErr.Message = err.Error()
 		}
+
+		if errMsg == nil {
+			appErr.Message = "Update message later ..."
+			response.WriteJson(w, nil, &appErr)
+			return
+		}
+
+		appErr.Message = errMsg.Val
+
 		response.WriteJson(w, nil, &appErr)
 		return
 	}
@@ -156,13 +196,21 @@ func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		switch err {
-		case ErrInvalidUserID:
-			appErr.Message = "Invalid user ID"
-			appErr.Status = status.BAD_REQUEST
-		default:
-			appErr.Message = "Something went wrong"
+		appErr.Status = UserErrStatusMap[err]
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		if err != nil {
+			appErr.BaseError = err
+			appErr.Message = err.Error()
 		}
+
+		if errMsg == nil {
+			appErr.Message = "Update message later ..."
+			response.WriteJson(w, nil, &appErr)
+			return
+		}
+
+		appErr.Message = errMsg.Val
+
 		response.WriteJson(w, nil, &appErr)
 		return
 	}
