@@ -21,6 +21,11 @@ func (s *Service) GetLingo(ctx context.Context, lang Lang, key string) (*Lingo, 
 	return s.repo.GetByLangAndKey(ctx, lang, key)
 }
 
+func (s *Service) UpdateLingo(ctx context.Context, req *UpdateLingoRequest) (*Lingo, error) {
+	dto := BuildUpdateLingoDTO(req)
+	return s.repo.UpdateByLangAndKey(ctx, dto)
+}
+
 func (s *Service) DeleteLingo(ctx context.Context, lang Lang, key string) error {
 	return s.repo.DeleteByLangAndKey(ctx, lang, key)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
@@ -12,6 +13,8 @@ import (
 type IRepository interface {
 	Insert(ctx context.Context, l Lingo) (*Lingo, error)
 	GetByLangAndKey(ctx context.Context, lang Lang, key string) (*Lingo, error)
+	Update(ctx context.Context, req *LingoUpdateDTO) (*Lingo, error)
+	UpdateByLangAndKey(ctx context.Context, req *LingoUpdateDTO) (*Lingo, error)
 	DeleteByLangAndKey(ctx context.Context, lang Lang, key string) error
 }
 
@@ -40,7 +43,7 @@ type sqlLingo struct {
 func (r *LingoRepository) Insert(ctx context.Context, l Lingo) (*Lingo, error) {
 	query := `
 		INSERT INTO lingos (id, lang, lkey, lval, status, create_id, create_dt, modify_id, modify_dt)
-		VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, NOW())
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	if l.ID == "" {
 		uuid, err := uuid.GenerateUUIDV7()
@@ -57,7 +60,9 @@ func (r *LingoRepository) Insert(ctx context.Context, l Lingo) (*Lingo, error) {
 		l.Val,
 		l.Status,
 		l.CreateID,
+		time.Now().UTC(),
 		l.ModifyID,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return nil, err
@@ -100,6 +105,55 @@ func (r *LingoRepository) GetByLangAndKey(ctx context.Context, lang Lang, key st
 	}
 
 	return lingo, nil
+}
+
+func (r *LingoRepository) Update(ctx context.Context, req *LingoUpdateDTO) (*Lingo, error) {
+	query := `
+		UPDATE lingos
+		SET lang = COALESCE(?, lang),
+			lkey = COALESCE(?, lkey),
+			lval = COALESCE(?, lval),
+			status = COALESCE(?, status),
+			modify_dt = ?
+		WHERE id = ?
+	`
+	_, err := r.db.Exec(ctx, query,
+		req.Lang,
+		req.Key,
+		req.Val,
+		req.Status,
+		time.Now().UTC(),
+		req.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch the updated record
+	return r.GetByLangAndKey(ctx, Lang(*req.Lang), *req.Key)
+}
+
+func (r *LingoRepository) UpdateByLangAndKey(ctx context.Context, req *LingoUpdateDTO) (*Lingo, error) {
+	query := `
+		UPDATE lingos
+		SET lval = COALESCE(?, lval),
+			status = COALESCE(?, status),
+			modify_dt = ?
+		WHERE lang = ? AND lkey = ?
+	`
+	_, err := r.db.Exec(ctx, query,
+		req.Val,
+		req.Status,
+		time.Now().UTC(),
+		req.Lang,
+		req.Key,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch the updated record
+	return r.GetByLangAndKey(ctx, Lang(*req.Lang), *req.Key)
 }
 
 func (r *LingoRepository) DeleteByLangAndKey(ctx context.Context, lang Lang, key string) error {

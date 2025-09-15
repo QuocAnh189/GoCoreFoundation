@@ -1,6 +1,7 @@
 package lingos
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
@@ -53,8 +54,24 @@ func (c *Controller) HandleGetLingo(w http.ResponseWriter, r *http.Request) {
 
 // POST - /lingos/update
 func (c *Controller) HandleUpdateLingo(w http.ResponseWriter, r *http.Request) {
-	// return c.service.UpdateLingo(ctx, l)
-	response.WriteJson(w, nil, nil)
+	var req UpdateLingoRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteJson(w, nil, response.ErrInvalidParams())
+		return
+	}
+
+	lingo, err := c.service.UpdateLingo(r.Context(), &req)
+	if err != nil {
+		response.WriteJson(w, nil, err)
+		return
+	}
+
+	res := &UpdateLingoResponse{
+		Lingo: lingo,
+	}
+
+	response.WriteJson(w, res, nil)
 }
 
 // POST - /lingos/delete
