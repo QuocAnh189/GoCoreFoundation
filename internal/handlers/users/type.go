@@ -7,18 +7,19 @@ import (
 )
 
 type User struct {
-	ID         string    `json:"id"`
-	FirstName  string    `json:"first_name"`
-	MiddleName *string   `json:"middle_name"`
-	LastName   string    `json:"last_name"`
-	Phone      string    `json:"phone"`
-	Email      string    `json:"email"`
-	Role       Role      `json:"role"`
-	Status     string    `json:"status"`
-	CreateID   *int64    `json:"create_id"`
-	CreateDT   time.Time `json:"create_dt"`
-	ModifyID   *int64    `json:"modify_id"`
-	ModifyDT   time.Time `json:"modify_dt"`
+	ID         string     `json:"id"`
+	FirstName  string     `json:"first_name"`
+	MiddleName *string    `json:"middle_name"`
+	LastName   string     `json:"last_name"`
+	Phone      string     `json:"phone"`
+	Email      string     `json:"email"`
+	Role       Role       `json:"role"`
+	Status     string     `json:"status"`
+	CreateID   *int64     `json:"create_id"`
+	CreateDT   time.Time  `json:"create_dt"`
+	ModifyID   *int64     `json:"modify_id"`
+	ModifyDT   time.Time  `json:"modify_dt"`
+	DeletedDT  *time.Time `json:"deleted_dt,omitempty"`
 }
 
 type ListUserRequest struct {
@@ -54,13 +55,13 @@ type CreateUserResponse struct {
 
 type UpdateUserRequest struct {
 	UID        string  `json:"uid"`
-	FirstName  *string `json:"first_name",omitempty"`
-	MiddleName *string `json:"middle_name",omitempty"`
-	LastName   *string `json:"last_name",omitempty"`
-	Phone      *string `json:"phone",omitempty"`
-	Email      *string `json:"email",omitempty"`
-	Role       *Role   `json:"role",omitempty"`
-	Status     *string `json:"status",omitempty"`
+	FirstName  *string `json:"first_name,omitempty"`
+	MiddleName *string `json:"middle_name,omitempty"`
+	LastName   *string `json:"last_name,omitempty"`
+	Phone      *string `json:"phone,omitempty"`
+	Email      *string `json:"email,omitempty"`
+	Role       *Role   `json:"role,omitempty"`
+	Status     *string `json:"status,omitempty"`
 }
 
 type UpdateUserResponse struct {

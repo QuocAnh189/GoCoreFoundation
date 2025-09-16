@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
@@ -57,12 +58,12 @@ func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListU
 	queryBuilder.WriteString(`
 		SELECT id, first_name, middle_name, last_name, phone, email, 
 		role, status, create_id, create_dt, modify_id, modify_dt
-		FROM users
+		FROM users WHERE deleted_dt IS NULL
 	`)
 
 	// Add search condition
 	if req.Search != "" {
-		queryBuilder.WriteString(` WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ?`)
+		queryBuilder.WriteString(` AND first_name LIKE ? OR last_name LIKE ? OR email LIKE ?`)
 		searchTerm := "%" + req.Search + "%"
 		args = append(args, searchTerm, searchTerm, searchTerm)
 	}
@@ -70,7 +71,7 @@ func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListU
 	// Count total records for pagination
 	countQuery := "SELECT COUNT(*) FROM users"
 	if req.Search != "" {
-		countQuery += ` WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ?`
+		countQuery += ` WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? AND deleted_dt IS NULL`
 	}
 	var total int64
 	countRow := r.db.QueryRow(ctx, countQuery, args...)
@@ -149,7 +150,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error)
 		SELECT id, first_name, middle_name, last_name, phone, email, 
 		role, status, create_id, create_dt, modify_id, modify_dt
 		FROM users
-		WHERE id = ?
+		WHERE id = ? AND deleted_dt IS NULL
 	`
 
 	result := r.db.QueryRow(ctx, query, id)
@@ -190,7 +191,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, 
 		SELECT id, first_name, middle_name, last_name, phone, email, 
 		role, status, create_id, create_dt, modify_id, modify_dt
 		FROM users
-		WHERE email = ?
+		WHERE email = ? AND deleted_dt IS NULL
 	`
 	result := r.db.QueryRow(ctx, query, email)
 
@@ -264,7 +265,7 @@ func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) (*User,
 			email = COALESCE(?, email),
 			role = COALESCE(?, role),
 			status = COALESCE(?, status)
-		WHERE id = ?
+		WHERE id = ? AND deleted_dt IS NULL
 	`
 	_, err := r.db.Exec(ctx, query,
 		dto.FirstName,
@@ -285,8 +286,12 @@ func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) (*User,
 
 // Delete removes a user by ID.
 func (r *UserRepository) Delete(ctx context.Context, id string) error {
-	query := `DELETE FROM users WHERE id = ?`
-	_, err := r.db.Exec(ctx, query, id)
+	query := `
+		UPDATE users
+		SET deleted_dt = ?
+		WHERE id = ?
+	`
+	_, err := r.db.Exec(ctx, query, time.Now().UTC(), id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %v", err)
 	}

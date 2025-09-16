@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/lingos"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
+	ctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
@@ -48,12 +50,14 @@ func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) 
 func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.PathValue("id")
 
+	language := ctx.GetLocale(r.Context())
+
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
 		appErr.Status = DetermineErrStatus(err)
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), lingos.Lang(language), DetermineErrKey(err))
 		if err != nil {
 			appErr.BaseError = err
 			appErr.Message = err.Error()
@@ -150,6 +154,7 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		println("UpdateUser request:", req.UID)
 		response.WriteJson(w, nil, response.ErrInvalidParams())
 		return
 	}

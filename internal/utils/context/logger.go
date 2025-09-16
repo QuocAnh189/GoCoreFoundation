@@ -1,4 +1,4 @@
-package ezctx
+package ctx
 
 import (
 	"context"
