@@ -35,30 +35,42 @@ var (
 	ErrInvalidStatus    = errors.New("invalid status")
 )
 
-var UserErrKeyMap = map[error]string{
-	ErrInvalidParameter: "user.invalid_parameter",
-	ErrInvalidUserID:    "user.invalid_user_id",
-	ErrUserNotFound:     "user.not_found",
-
-	ErrMissingFirstName: "user.first_name_required",
-	ErrMissingLastName:  "usre_.last_name_required",
-	ErrMissingPhone:     "user.phone_required",
-	ErrMissingEmail:     "user.email_required",
-	ErrInvalidEmail:     "user.invalid_email_format",
-	ErrInvalidRole:      "user.invalid_role",
-	ErrInvalidStatus:    "user.invalid_status",
+func DetermineErrKey(err error) string {
+	switch err {
+	case ErrInvalidParameter:
+		return "user.invalid_parameter"
+	case ErrInvalidUserID:
+		return "user.invalid_user_id"
+	case ErrUserNotFound:
+		return "user.not_found"
+	case ErrMissingFirstName:
+		return "user.first_name_required"
+	case ErrMissingLastName:
+		return "user.last_name_required"
+	case ErrMissingPhone:
+		return "user.phone_required"
+	case ErrMissingEmail:
+		return "user.email_required"
+	case ErrInvalidEmail:
+		return "user.invalid_email_format"
+	case ErrInvalidRole:
+		return "user.invalid_role"
+	case ErrInvalidStatus:
+		return "user.invalid_status"
+	default:
+		return "user.unknown_error"
+	}
 }
 
-var UserErrStatusMap = map[error]status.AppStatusCode{
-	ErrInvalidParameter: status.BAD_REQUEST,
-	ErrInvalidUserID:    status.BAD_REQUEST,
-	ErrUserNotFound:     status.NOT_FOUND,
-
-	ErrMissingFirstName: status.BAD_REQUEST,
-	ErrMissingLastName:  status.BAD_REQUEST,
-	ErrMissingPhone:     status.BAD_REQUEST,
-	ErrMissingEmail:     status.BAD_REQUEST,
-	ErrInvalidEmail:     status.BAD_REQUEST,
-	ErrInvalidRole:      status.BAD_REQUEST,
-	ErrInvalidStatus:    status.BAD_REQUEST,
+func DetermineErrStatus(err error) int {
+	switch err {
+	case ErrInvalidParameter, ErrInvalidUserID, ErrMissingFirstName,
+		ErrMissingLastName, ErrMissingPhone, ErrMissingEmail,
+		ErrInvalidEmail, ErrInvalidRole, ErrInvalidStatus:
+		return status.BAD_REQUEST
+	case ErrUserNotFound:
+		return status.NOT_FOUND
+	default:
+		return status.INTERNAL
+	}
 }

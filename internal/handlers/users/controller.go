@@ -52,8 +52,8 @@ func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		appErr.Status = UserErrStatusMap[err]
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		appErr.Status = DetermineErrStatus(err)
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
 		if err != nil {
 			appErr.BaseError = err
 			appErr.Message = err.Error()
@@ -86,8 +86,8 @@ func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		appErr.Status = UserErrStatusMap[err]
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		appErr.Status = DetermineErrStatus(err)
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
 		if err != nil {
 			appErr.BaseError = err
 			appErr.Message = err.Error()
@@ -120,8 +120,8 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		appErr.Status = UserErrStatusMap[err]
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		appErr.Status = DetermineErrStatus(err)
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
 		if err != nil {
 			appErr.BaseError = err
 			appErr.Message = err.Error()
@@ -158,8 +158,8 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		appErr.Status = UserErrStatusMap[err]
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		appErr.Status = DetermineErrStatus(err)
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
 		if err != nil {
 			appErr.BaseError = err
 			appErr.Message = err.Error()
@@ -196,8 +196,8 @@ func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
-		appErr.Status = UserErrStatusMap[err]
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, UserErrKeyMap[err])
+		appErr.Status = DetermineErrStatus(err)
+		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
 		if err != nil {
 			appErr.BaseError = err
 			appErr.Message = err.Error()
