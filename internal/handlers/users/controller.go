@@ -11,20 +11,20 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
-type UserController struct {
+type Controller struct {
 	appResources *resource.AppResource
-	service      *UserService
+	service      *Service
 }
 
-func NewController(appResources *resource.AppResource, service *UserService) *UserController {
-	return &UserController{
+func NewController(appResources *resource.AppResource, service *Service) *Controller {
+	return &Controller{
 		appResources: appResources,
 		service:      service,
 	}
 }
 
 // Get - /users/list
-func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
+func (u *Controller) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 	var req ListUserRequest
 
 	if err := bind.ParseQuery(r, &req); err != nil {
@@ -47,7 +47,7 @@ func (u *UserController) HandleGetUsers(w http.ResponseWriter, r *http.Request) 
 }
 
 // Get - /users/{id}
-func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
+func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.PathValue("id")
 
 	language := ctx.GetLocale(r.Context())
@@ -83,7 +83,7 @@ func (u *UserController) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get - /users/profile
-func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
+func (u *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	var userID string
 
 	user, err := u.service.GetUserByID(r.Context(), userID)
@@ -113,7 +113,7 @@ func (u *UserController) HandleGetProfile(w http.ResponseWriter, r *http.Request
 }
 
 // POST - /users/create
-func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
+func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteJson(w, nil, response.ErrInvalidParams())
@@ -151,7 +151,7 @@ func (u *UserController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 }
 
 // POST - /users/update
-func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
+func (u *Controller) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		println("UpdateUser request:", req.UID)
@@ -190,7 +190,7 @@ func (u *UserController) HandleUpdateUser(w http.ResponseWriter, r *http.Request
 }
 
 // POST - /users/delete
-func (u *UserController) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
+func (u *Controller) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	var req DeleteUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteJson(w, nil, response.ErrInvalidParams())
