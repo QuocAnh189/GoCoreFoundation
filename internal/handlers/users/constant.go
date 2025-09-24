@@ -2,8 +2,6 @@ package users
 
 import (
 	"errors"
-
-	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 )
 
 type Role string
@@ -34,43 +32,3 @@ var (
 	ErrInvalidRole      = errors.New("invalid role")
 	ErrInvalidStatus    = errors.New("invalid status")
 )
-
-func DetermineErrKey(err error) string {
-	switch err {
-	case ErrInvalidParameter:
-		return "user.invalid_parameter"
-	case ErrInvalidUserID:
-		return "user.invalid_user_id"
-	case ErrUserNotFound:
-		return "user.not_found"
-	case ErrMissingFirstName:
-		return "user.first_name_required"
-	case ErrMissingLastName:
-		return "user.last_name_required"
-	case ErrMissingPhone:
-		return "user.phone_required"
-	case ErrMissingEmail:
-		return "user.email_required"
-	case ErrInvalidEmail:
-		return "user.invalid_email_format"
-	case ErrInvalidRole:
-		return "user.invalid_role"
-	case ErrInvalidStatus:
-		return "user.invalid_status"
-	default:
-		return "user.unknown_error"
-	}
-}
-
-func DetermineErrStatus(err error) int {
-	switch err {
-	case ErrInvalidParameter, ErrInvalidUserID, ErrMissingFirstName,
-		ErrMissingLastName, ErrMissingPhone, ErrMissingEmail,
-		ErrInvalidEmail, ErrInvalidRole, ErrInvalidStatus:
-		return status.BAD_REQUEST
-	case ErrUserNotFound:
-		return status.NOT_FOUND
-	default:
-		return status.INTERNAL
-	}
-}

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/lingos"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
 	ctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
@@ -57,19 +56,22 @@ func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		var appErr response.AppError
 		appErr.BaseError = err
 		appErr.Status = DetermineErrStatus(err)
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), lingos.Lang(language), DetermineErrKey(err))
-		if err != nil {
-			appErr.BaseError = err
-			appErr.Message = err.Error()
-		}
+		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
 
-		if errMsg == nil {
-			appErr.Message = "Update message later ..."
-			response.WriteJson(w, nil, &appErr)
-			return
-		}
+		// TODO: Get message from lingo service
+		// errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), lingos.Lang(language), DetermineErrKey(err))
+		// if err != nil {
+		// 	appErr.BaseError = err
+		// 	appErr.Message = err.Error()
+		// }
 
-		appErr.Message = errMsg.Val
+		// if errMsg == nil {
+		// 	appErr.Message = "Update message later ..."
+		// 	response.WriteJson(w, nil, &appErr)
+		// 	return
+		// }
+
+		// appErr.Message = errMsg.Val
 
 		response.WriteJson(w, nil, &appErr)
 		return
@@ -86,24 +88,14 @@ func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 func (u *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	var userID string
 
+	language := ctx.GetLocale(r.Context())
+
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
 		appErr.Status = DetermineErrStatus(err)
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
-		if err != nil {
-			appErr.BaseError = err
-			appErr.Message = err.Error()
-		}
-
-		if errMsg == nil {
-			appErr.Message = "Update message later ..."
-			response.WriteJson(w, nil, &appErr)
-			return
-		}
-
-		appErr.Message = errMsg.Val
+		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
 
 		response.WriteJson(w, nil, &appErr)
 		return
@@ -120,24 +112,14 @@ func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	language := ctx.GetLocale(r.Context())
+
 	user, err := u.service.CreateUser(r.Context(), &req)
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
 		appErr.Status = DetermineErrStatus(err)
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
-		if err != nil {
-			appErr.BaseError = err
-			appErr.Message = err.Error()
-		}
-
-		if errMsg == nil {
-			appErr.Message = "Update message later ..."
-			response.WriteJson(w, nil, &appErr)
-			return
-		}
-
-		appErr.Message = errMsg.Val
+		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
 
 		response.WriteJson(w, nil, &appErr)
 		return
@@ -159,24 +141,14 @@ func (u *Controller) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	language := ctx.GetLocale(r.Context())
+
 	user, err := u.service.UpdateUser(r.Context(), &req)
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
 		appErr.Status = DetermineErrStatus(err)
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
-		if err != nil {
-			appErr.BaseError = err
-			appErr.Message = err.Error()
-		}
-
-		if errMsg == nil {
-			appErr.Message = "Update message later ..."
-			response.WriteJson(w, nil, &appErr)
-			return
-		}
-
-		appErr.Message = errMsg.Val
+		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
 
 		response.WriteJson(w, nil, &appErr)
 		return
@@ -197,24 +169,14 @@ func (u *Controller) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	language := ctx.GetLocale(r.Context())
+
 	err := u.service.DeleteUser(r.Context(), req.UserID)
 	if err != nil {
 		var appErr response.AppError
 		appErr.BaseError = err
 		appErr.Status = DetermineErrStatus(err)
-		errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), DefaultLang, DetermineErrKey(err))
-		if err != nil {
-			appErr.BaseError = err
-			appErr.Message = err.Error()
-		}
-
-		if errMsg == nil {
-			appErr.Message = "Update message later ..."
-			response.WriteJson(w, nil, &appErr)
-			return
-		}
-
-		appErr.Message = errMsg.Val
+		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
 
 		response.WriteJson(w, nil, &appErr)
 		return
