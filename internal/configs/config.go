@@ -11,6 +11,7 @@ import (
 
 type Env struct {
 	DBEnv *db.Config
+	Port  string
 }
 
 func NewEnv(envpath string) (*Env, error) {
@@ -28,6 +29,7 @@ func NewEnv(envpath string) (*Env, error) {
 			Name:     getConfig("DB_NAME"),
 			SSLMode:  getConfig("DB_SSL_MODE"),
 		},
+		Port: getConfig("PORT"),
 	}
 	return result, nil
 }

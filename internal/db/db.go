@@ -2,11 +2,14 @@ package db
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/colors"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -40,6 +43,7 @@ func NewDatabase(config *Config) (*Database, error) {
 	mysqlCfg.DBName = config.Name
 	mysqlCfg.AllowNativePasswords = true
 	mysqlCfg.Net = "tcp"
+	mysqlCfg.TLS = &tls.Config{MinVersion: tls.VersionTLS12, MaxVersion: tls.VersionTLS12}
 	mysqlCfg.ParseTime = true
 
 	db, err := sql.Open("mysql", mysqlCfg.FormatDSN())
@@ -85,21 +89,70 @@ func (d *Database) WithTransaction(function func() error) error {
 }
 
 func (d *Database) Query(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	return d.db.QueryContext(ctx, query, args...)
+	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
+	defer cancel()
+
+	d.logInputSQL(colors.FGGreen, query, args...)
+	rows, err := d.db.Query(query, args...)
+	if err != nil {
+		d.logQueryError(err)
+	}
+	d.logQueryRowsResult(rows)
+
+	return rows, err
 }
 
 func (d *Database) QueryRow(ctx context.Context, query string, args ...any) *sql.Row {
-	return d.db.QueryRowContext(ctx, query, args...)
+	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
+	defer cancel()
+
+	d.logInputSQL(colors.FGGreen, query, args...)
+	row := d.db.QueryRow(query, args...)
+	d.logQueryRowResult(row)
+
+	return row
 }
 
 func (d *Database) Exec(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	return d.db.ExecContext(ctx, query, args...)
+	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
+	defer cancel()
+
+	var color colors.Color
+
+	normalized := strings.TrimSpace(strings.ToUpper(query))
+	switch {
+	case strings.HasPrefix(normalized, "SELECT"):
+		color = colors.FGGreen
+	case strings.HasPrefix(normalized, "INSERT"):
+		color = colors.FGCyan
+	case strings.HasPrefix(normalized, "UPDATE"):
+		color = colors.FGYellow
+	case strings.HasPrefix(normalized, "DELETE"):
+		color = colors.FGRed
+	default:
+		color = colors.FGOrange
+	}
+
+	d.logInputSQL(color, query, args...)
+	result, err := d.db.Exec(query, args...)
+	if err != nil {
+		d.logQueryError(err)
+	}
+	if result != nil {
+		d.logExecResult(result)
+	}
+
+	return result, err
 }
 
 func (d *Database) PingContext(ctx context.Context) error {
+	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
+	defer cancel()
+
+	d.logInputSQL(colors.FGPurple, "PING")
 	return d.db.PingContext(ctx)
 }
 
 func (d *Database) Close() error {
-	return d.Close()
+	return d.db.Close()
 }

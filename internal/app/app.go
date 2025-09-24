@@ -25,7 +25,8 @@ func NewFromEnv(envPath string) (*App, error) {
 	}
 
 	resource := resource.AppResource{
-		Db: database,
+		Env: env,
+		Db:  database,
 	}
 
 	app := NewApp(&resource)
@@ -48,7 +49,7 @@ func (a *App) Init() error {
 	a.Services = services
 
 	a.Server = &http.Server{
-		Addr: ":8080",
+		Addr: fmt.Sprintf(":%s", a.Resource.Env.Port),
 	}
 
 	// a.setupMiddleware(a.Server)
@@ -57,7 +58,7 @@ func (a *App) Init() error {
 }
 
 func (a *App) Start() error {
-	log.Println("Server running on port 8080")
+	log.Println("Server running on port " + a.Resource.Env.Port)
 	return a.Server.ListenAndServe()
 }
 
