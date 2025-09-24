@@ -10,8 +10,9 @@ import (
 )
 
 type Env struct {
-	DBEnv *db.Config
-	Port  string
+	DBEnv       *db.Config
+	Port        string
+	LogFilePath string
 }
 
 func NewEnv(envpath string) (*Env, error) {
@@ -29,7 +30,8 @@ func NewEnv(envpath string) (*Env, error) {
 			Name:     getConfig("DB_NAME"),
 			SSLMode:  getConfig("DB_SSL_MODE"),
 		},
-		Port: getConfig("PORT"),
+		Port:        getConfig("PORT"),
+		LogFilePath: getConfig("LOG_FILE_PATH"),
 	}
 	return result, nil
 }

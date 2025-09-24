@@ -2,6 +2,7 @@
 session_data_store
 .vscode/
 .DS_Store
+log_file
 
 # AI files
 .cursor/
