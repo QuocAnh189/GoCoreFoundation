@@ -38,7 +38,7 @@ migrate-down:
 	@echo "✅ All DOWN migrations completed."
 
 ## create-migration NAME=<name>: Create a new migration file.
-create-migration:
+migrate-create:
 	@if [ -z "$(NAME)" ]; then \
 		echo "Usage: make create-migration NAME=<migration_name>"; \
 		exit 1; \

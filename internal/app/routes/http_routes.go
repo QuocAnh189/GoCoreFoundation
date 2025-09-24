@@ -43,5 +43,5 @@ func SetUpHttpRoutes(server *http.Server, res *resource.AppResource, services *a
 	server.Handler = mux
 	server.Handler = middleware.LogRequestMiddleware(server.Handler)
 	server.Handler = middleware.LocaleMiddleware("en")(server.Handler)
-	server.Handler = middleware.LoggerMiddleware(res.Env.LogFilePath)(server.Handler)
+	server.Handler = middleware.LoggerMiddleware(res.Env.ServerEnv.LogFilePath)(server.Handler)
 }

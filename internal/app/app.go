@@ -49,7 +49,7 @@ func (a *App) Init() error {
 	a.Services = services
 
 	a.Server = &http.Server{
-		Addr: fmt.Sprintf(":%s", a.Resource.Env.Port),
+		Addr: fmt.Sprintf(":%s", a.Resource.Env.ServerEnv.Port),
 	}
 
 	// a.setupMiddleware(a.Server)
@@ -58,7 +58,7 @@ func (a *App) Init() error {
 }
 
 func (a *App) Start() error {
-	log.Println("Server running on port " + a.Resource.Env.Port)
+	log.Println("Server running on port " + a.Resource.Env.ServerEnv.Port)
 	return a.Server.ListenAndServe()
 }
 
