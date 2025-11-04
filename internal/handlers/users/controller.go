@@ -58,21 +58,6 @@ func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		appErr.Status = DetermineErrStatus(err)
 		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
 
-		// TODO: Get message from lingo service
-		// errMsg, err := u.appResources.LingoSvc.GetLingo(r.Context(), lingos.Lang(language), DetermineErrKey(err))
-		// if err != nil {
-		// 	appErr.BaseError = err
-		// 	appErr.Message = err.Error()
-		// }
-
-		// if errMsg == nil {
-		// 	appErr.Message = "Update message later ..."
-		// 	response.WriteJson(w, nil, &appErr)
-		// 	return
-		// }
-
-		// appErr.Message = errMsg.Val
-
 		response.WriteJson(w, nil, &appErr)
 		return
 	}

@@ -8,6 +8,9 @@ func NewService() *Service {
 }
 
 // Check Stripe
+func (s *Service) CheckStripe() bool {
+	return true
+}
 
 // Check Goat
 func (s *Service) CheckGoat() bool {

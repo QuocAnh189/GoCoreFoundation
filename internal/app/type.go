@@ -1,18 +1,17 @@
 package app
 
 import (
-	"net/http"
-
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	appsvcs "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
+	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
 
 type App struct {
-	Server   *http.Server
+	Server   *root.Server
 	Services *appsvcs.ServiceContainer
-	Database db.IDatabase
 	Resource *resource.AppResource
+	Database db.IDatabase
 }
 
 func NewApp(resource *resource.AppResource) *App {

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/configs"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
+	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
 
 func NewFromEnv(envPath string) (*App, error) {
@@ -24,17 +27,33 @@ func NewFromEnv(envPath string) (*App, error) {
 		return nil, fmt.Errorf("failed to connect to the database: %w", err)
 	}
 
+	// Ping the database
+	if err := database.PingContext(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to ping the database: %w", err)
+	}
+
+	// Build app resource
+	hostConfig := root.HostConfig{
+		ServerHost: env.HostConfig.ServerHost,
+		ServerPort: env.HostConfig.ServerPort,
+	}
+	if env.HostConfig.HttpsCertFile != nil {
+		hostConfig.HttpsCertFile = *env.HostConfig.HttpsCertFile
+	}
+	if env.HostConfig.HttpsKeyFile != nil {
+		hostConfig.HttpsKeyFile = *env.HostConfig.HttpsKeyFile
+	}
 	resource := resource.AppResource{
-		Env: env,
-		Db:  database,
+		Env:        env,
+		HostConfig: hostConfig,
+		Db:         database,
 	}
 
 	app := NewApp(&resource)
 	if err := app.Init(); err != nil {
 		return nil, fmt.Errorf("failed to init app: %w", err)
 	}
-
-	resource.LingoSvc = app.Services.LingoService
+	app.Database = database
 
 	approutes.SetUpHttpRoutes(app.Server, &resource, app.Services)
 
@@ -48,18 +67,25 @@ func (a *App) Init() error {
 	}
 	a.Services = services
 
-	a.Server = &http.Server{
-		Addr: fmt.Sprintf(":%s", a.Resource.Env.ServerEnv.Port),
+	defaultRouteHandler := func(w http.ResponseWriter, r *http.Request) {
+		response.WriteJson(w, nil, fmt.Errorf("route not found"))
 	}
+	a.Server = root.NewServer(a.Resource.HostConfig, defaultRouteHandler)
 
+	// Register middlewares
 	// a.setupMiddleware(a.Server)
 
+	// Setup jobs
+
+	// Setup shutdown hooks
+
+	// Reload sessions
 	return nil
 }
 
 func (a *App) Start() error {
 	log.Println("Server running on port " + a.Resource.Env.ServerEnv.Port)
-	return a.Server.ListenAndServe()
+	return a.Server.Start()
 }
 
 func (a *App) Close() error {

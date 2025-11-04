@@ -9,14 +9,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type ServerConfig struct {
-	Port        string
-	LogFilePath string
-}
-
 type Env struct {
-	DBEnv     *db.Config
-	ServerEnv *ServerConfig
+	DBEnv      *db.Config
+	ServerEnv  *ServerConfig
+	HostConfig HostConfig
 }
 
 func NewEnv(envpath string) (*Env, error) {
@@ -37,6 +33,12 @@ func NewEnv(envpath string) (*Env, error) {
 		ServerEnv: &ServerConfig{
 			Port:        getConfig("SERVER_PORT"),
 			LogFilePath: getConfig("LOG_FILE_PATH"),
+		},
+		HostConfig: HostConfig{
+			ServerHost:    getConfig("SERVER_HOST"),
+			ServerPort:    getConfig("SERVER_PORT"),
+			HttpsCertFile: getConfigOptional("HTTPS_CERT_FILE"),
+			HttpsKeyFile:  getConfigOptional("HTTPS_KEY_FILE"),
 		},
 	}
 	return result, nil
