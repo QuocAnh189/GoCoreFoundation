@@ -51,6 +51,8 @@ func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 
 	language := ctx.GetLocale(r.Context())
 
+	println("language", language)
+
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		var appErr response.AppError
