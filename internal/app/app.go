@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	approutes "github.com/QuocAnh189/GoCoreFoundation/internal/app/routes"
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/configs"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
+	middleware "github.com/QuocAnh189/GoCoreFoundation/internal/middlewares"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
@@ -73,7 +75,7 @@ func (a *App) Init() error {
 	a.Server = root.NewServer(a.Resource.HostConfig, defaultRouteHandler)
 
 	// Register middlewares
-	// a.setupMiddleware(a.Server)
+	a.setupMiddleware(a.Server, services)
 
 	// Setup jobs
 
@@ -92,10 +94,25 @@ func (a *App) Close() error {
 	return a.Database.Close()
 }
 
-// type Middleware func(http.Handler) http.Handler
+// Setup middlewares
+func (a *App) setupMiddleware(rootSvr *root.Server, services *appservices.ServiceContainer) {
 
-// func (a *App) setupMiddleware(server *http.Server) {
-// 	log.Println("Registering middlewares...")
+	// Middleware are run in order of declaration
+	// The first middleware in the slice runs first
+	middlewares := []root.Middleware{
+		// Start-->
+		middleware.LocaleMiddleware("en"),
+		middleware.LogRequestMiddleware,
+		// -->End
+	}
+
+	slices.Reverse(middlewares) // Reverse the middleware order so that the first middleware in the slice is the first to run
+	for _, middleware := range middlewares {
+		rootSvr.RegisterMiddleware(middleware)
+	}
+
+	rootSvr.SetupServerCORS()
+}
 
 // 	middlewares := []Middleware{
 // 		middleware.LogRequestMiddleware,
