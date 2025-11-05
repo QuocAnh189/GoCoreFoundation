@@ -13,6 +13,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/configs"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/jobs"
 	middleware "github.com/QuocAnh189/GoCoreFoundation/internal/middlewares"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 	"github.com/QuocAnh189/GoCoreFoundation/root"
@@ -79,6 +80,7 @@ func (a *App) Init() error {
 	a.setupMiddleware(a.Server, services)
 
 	// Setup jobs
+	a.setupJobs(a.Server, a.Services)
 
 	// Setup shutdown hooks
 
@@ -96,7 +98,7 @@ func (a *App) Close() error {
 }
 
 // Setup middlewares
-func (a *App) setupMiddleware(rootSvr *root.Server, services *appservices.ServiceContainer) {
+func (a *App) setupMiddleware(rootSvr *root.Server, _ *appservices.ServiceContainer) {
 
 	// Middleware are run in order of declaration
 	// The first middleware in the slice runs first
@@ -115,11 +117,14 @@ func (a *App) setupMiddleware(rootSvr *root.Server, services *appservices.Servic
 	rootSvr.SetupServerCORS()
 }
 
-// 	middlewares := []Middleware{
-// 		middleware.LogRequestMiddleware,
-// 	}
+func (a *App) setupJobs(_ *root.Server, _ *appservices.ServiceContainer) {
+	// Register jobs with the job manager
+	testJob := jobs.NewTestJob()
+	userJob := jobs.NewUserJob(a.Services.UserService)
 
-// 	for _, m := range middlewares {
-// 		server.Handler = m(server.Handler)
-// 	}
-// }
+	a.JobManager.RegisterJob(testJob)
+	a.JobManager.RegisterJob(userJob)
+
+	// Start the job manager
+	a.JobManager.Start()
+}
