@@ -1,46 +1,31 @@
 # GoCoreFoundation
 
-## 1.Migrations
+## Overview
 
-This guide outlines the process for creating and managing database schema changes using the project's migration system. All migration files are located in the `migrations/up` and `migrations/down` directories.
+Update Later
 
----
+## How to run application on your local (execute only if the previous step was successful)
 
-### How to Create a New Migration
+1. Clone the repo and cd into it
+2. Copy `.env.example` file to `.env` file and fill in your input
+3. Create instance database locally based on your database credentials (remember update env file)
+4. Run `make migrate-up` for setup your local database or `make migrate-down` if you want to reset database
+5. Run `make run` to run app on your local
+6. Test api with BASE_URL is `http://localhost:8080`
 
-1.  Generate new migration files using the `make create-migration` command. You must provide a descriptive `NAME`.
+## How to run application on Docker (execute only if the previous step was successful)
 
-    ```sh
-    # This will create a pair of files in the migrations/up and migrations/down directories
-    make create-migration NAME=add_email_to_users_table
-    ```
+1. Clone the repo and cd into it
+2. Copy `.env.example.docker` file to `.env.docker` file and fill in your input
+3. Run `make docker-compose-up` for running container docker
+4. Run `make migrate-up-docker` for setup your local database or `make migrate-down-docker` if you want to reset database
+5. Test api with BASE_URL is `http://localhost:8080`
 
-2.  Add SQL statements to the newly created files.
-    - In `migrations/up/YYYYMMDDHHMMSS_add_email_to_users_table.sql`, add the SQL to apply your changes.
-      ```sql
-      ALTER TABLE users ADD COLUMN email VARCHAR(255) UNIQUE;
-      ```
-    - In `migrations/down/YYYYMMDDHHMMSS_add_email_to_users_table.sql`, add the SQL to revert your changes.
-      ```sql
-      ALTER TABLE users DROP COLUMN email;
-      ```
+## Author Contact
 
----
+Contact me with any questions!<br>
 
-### How to Run Migrations
+Email: anquoctpdev@gmail.com
+Facebook: https://www.facebook.com/tranphuocanhquoc2003
 
-1.  Apply all pending migrations to the database.
-
-    This command executes all scripts in `migrations/up/` in chronological order.
-
-    ```sh
-    make migrate-up
-    ```
-
-2.  Revert (rollback) migrations.
-
-    This command executes all scripts in `migrations/down/` in reverse chronological order.
-
-    ```sh
-    make migrate-down
-    ```
+<p style="text-align:center">Thank You so much for your time!!!</p>
