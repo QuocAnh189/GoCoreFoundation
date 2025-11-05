@@ -84,6 +84,7 @@ func (a *App) Init() error {
 	a.setupJobs(a.Server, a.Services)
 
 	// Setup shutdown hooks
+	a.setupShutdownHooks(a.Server, services)
 
 	// Reload sessions
 	return nil
@@ -128,4 +129,14 @@ func (a *App) setupJobs(_ *root.Server, appService *appservices.ServiceContainer
 
 	// Start the job manager
 	a.JobManager.Start()
+}
+
+func (a *App) setupShutdownHooks(rootSvr *root.Server, _ *appservices.ServiceContainer) {
+	rootSvr.OnShutdown(func() {
+		// Stop the job manager
+		if a.JobManager != nil {
+			log.Println("Stopping job manager...")
+			a.JobManager.Stop()
+		}
+	})
 }
