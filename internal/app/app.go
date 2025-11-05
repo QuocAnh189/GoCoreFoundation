@@ -70,6 +70,7 @@ func (a *App) Init() error {
 		return fmt.Errorf("failed to setup services: %w", err)
 	}
 	a.Services = services
+	a.Resource.SessionManager = services.SessionManager
 
 	defaultRouteHandler := func(w http.ResponseWriter, r *http.Request) {
 		response.WriteJson(w, r.Context(), nil, fmt.Errorf("route not found"), status.NOT_FOUND)
@@ -117,10 +118,10 @@ func (a *App) setupMiddleware(rootSvr *root.Server, _ *appservices.ServiceContai
 	rootSvr.SetupServerCORS()
 }
 
-func (a *App) setupJobs(_ *root.Server, _ *appservices.ServiceContainer) {
+func (a *App) setupJobs(_ *root.Server, appService *appservices.ServiceContainer) {
 	// Register jobs with the job manager
 	testJob := jobs.NewTestJob()
-	userJob := jobs.NewUserJob(a.Services.UserService)
+	userJob := jobs.NewUserJob(appService.UserService)
 
 	a.JobManager.RegisterJob(testJob)
 	a.JobManager.RegisterJob(userJob)

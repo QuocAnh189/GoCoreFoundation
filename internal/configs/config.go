@@ -2,6 +2,7 @@ package configs
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 
@@ -10,9 +11,11 @@ import (
 )
 
 type Env struct {
-	DBEnv      *db.Config
-	ServerEnv  *ServerConfig
-	HostConfig HostConfig
+	DBEnv             *db.Config
+	ServerEnv         *ServerConfig
+	HostConfig        HostConfig
+	SharedKeyBytes    []byte
+	RootSessionDriver string
 }
 
 func NewEnv(envpath string) (*Env, error) {
@@ -40,6 +43,8 @@ func NewEnv(envpath string) (*Env, error) {
 			HttpsCertFile: getConfigOptional("HTTPS_CERT_FILE"),
 			HttpsKeyFile:  getConfigOptional("HTTPS_KEY_FILE"),
 		},
+		SharedKeyBytes:    getFileBytesConfig("ROOT_SHARED_KEY"),
+		RootSessionDriver: getConfig("ROOT_SESSION_DRIVER"),
 	}
 	return result, nil
 }
@@ -77,6 +82,32 @@ func getBoolConfig(key string) bool {
 	return *val == "true"
 }
 
+func getFileBytesConfig(key string) []byte {
+	path := getConfig(key)
+	bytes, err := loadFile(path)
+	if err != nil || bytes == nil {
+		panic(fmt.Errorf("config error: %s failed to load file: %w", path, err))
+	}
+	return bytes
+}
+
 func loadFile(path string) ([]byte, error) {
-	return os.ReadFile(path)
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("config error: %s failed to open file: %w", path, err)
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("config error: %s failed to get file info: %w", path, err)
+	}
+
+	data := make([]byte, fileInfo.Size())
+	_, err = io.ReadFull(file, data)
+	if err != nil {
+		return nil, fmt.Errorf("config error: %s failed to read file: %w", path, err)
+	}
+
+	return data, nil
 }

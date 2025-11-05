@@ -4,11 +4,16 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/misc"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
 
 func SetUpHttpRoutes(server *root.Server, res *resource.AppResource, services *appservices.ServiceContainer) {
+	// misc
+	m := misc.NewController(res)
+	server.AddRoute("GET /misc/sessions/dump", m.HandleSessionDump)
+
 	//health
 	h := health.NewController(res, services.HealthService)
 	server.AddRoute("GET /healths/ping", h.HandlePing)
