@@ -61,7 +61,7 @@ type UpdateUserRequest struct {
 	Phone      *string `json:"phone,omitempty"`
 	Email      *string `json:"email,omitempty"`
 	Role       *Role   `json:"role,omitempty"`
-	Status     *string `json:"status,omitempty"`
+	Status     *Status `json:"status,omitempty"`
 }
 
 type UpdateUserResponse struct {

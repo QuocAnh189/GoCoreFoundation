@@ -45,6 +45,10 @@ func ValidateUpdateUserRequest(req *UpdateUserRequest) error {
 		return ErrInvalidRole
 	}
 
+	if req.Status != nil && !isValidStatus(*req.Status) {
+		return ErrInvalidStatus
+	}
+
 	return nil
 }
 

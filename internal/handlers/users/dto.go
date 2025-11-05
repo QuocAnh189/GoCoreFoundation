@@ -18,5 +18,5 @@ type UpdateUserDTO struct {
 	Email      *string `json:"email,omitempty"`
 	Phone      *string `json:"phone,omitempty"`
 	Role       *Role   `json:"role,omitempty"`
-	Status     *string `json:"status,omitempty"`
+	Status     *Status `json:"status,omitempty"`
 }
