@@ -23,13 +23,13 @@ type IRepository interface {
 }
 
 // UserRepository implements the IRepository interface.
-type UserRepository struct {
+type Repository struct {
 	db db.IDatabase
 }
 
 // NewUserRepository creates a new UserRepository.
-func NewUserRepository(db db.IDatabase) *UserRepository {
-	return &UserRepository{
+func NewRepository(db db.IDatabase) *Repository {
+	return &Repository{
 		db: db,
 	}
 }
@@ -50,7 +50,7 @@ type sqlUser struct {
 }
 
 // List retrieves a paginated list of users with optional search and sorting.
-func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error) {
+func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error) {
 	var queryBuilder strings.Builder
 	args := []interface{}{}
 
@@ -145,7 +145,7 @@ func (r *UserRepository) List(ctx context.Context, req *ListUserRequest) (*ListU
 }
 
 // FindByID retrieves a user by ID.
-func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error) {
+func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
 	query := `
 		SELECT id, first_name, middle_name, last_name, phone, email, 
 		role, status, create_id, create_dt, modify_id, modify_dt
@@ -186,7 +186,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error)
 }
 
 // FindByEmail retrieves a user by email.
-func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, error) {
+func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
 		SELECT id, first_name, middle_name, last_name, phone, email, 
 		role, status, create_id, create_dt, modify_id, modify_dt
@@ -227,7 +227,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, 
 }
 
 // Create inserts a new user into the database.
-func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User, error) {
+func (r *Repository) Create(ctx context.Context, dto *CreateUserDTO) (*User, error) {
 	uuid, err := uuid.GenerateUUIDV7()
 	if uuid == "" {
 		return nil, fmt.Errorf("failed to generate UUIDv7: %v", err)
@@ -255,7 +255,7 @@ func (r *UserRepository) Create(ctx context.Context, dto *CreateUserDTO) (*User,
 }
 
 // Update updates an existing user.
-func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) (*User, error) {
+func (r *Repository) Update(ctx context.Context, dto *UpdateUserDTO) (*User, error) {
 	query := `
 		UPDATE users
 		SET first_name = COALESCE(?, first_name),
@@ -285,7 +285,7 @@ func (r *UserRepository) Update(ctx context.Context, dto *UpdateUserDTO) (*User,
 }
 
 // Delete removes a user by ID.
-func (r *UserRepository) Delete(ctx context.Context, id string) error {
+func (r *Repository) Delete(ctx context.Context, id string) error {
 	query := `
 		UPDATE users
 		SET deleted_dt = ?

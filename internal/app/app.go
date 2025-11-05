@@ -15,6 +15,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/jobs"
 	middleware "github.com/QuocAnh189/GoCoreFoundation/internal/middlewares"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
@@ -100,12 +101,13 @@ func (a *App) Close() error {
 }
 
 // Setup middlewares
-func (a *App) setupMiddleware(rootSvr *root.Server, _ *appservices.ServiceContainer) {
+func (a *App) setupMiddleware(rootSvr *root.Server, services *appservices.ServiceContainer) {
 
 	// Middleware are run in order of declaration
 	// The first middleware in the slice runs first
 	middlewares := []root.Middleware{
 		// Start-->
+		middleware.RootSessionMiddleware(services.SessionProvider, sessions.SessionContextKey),
 		middleware.LocaleMiddleware("en"),
 		middleware.LogRequestMiddleware,
 		// -->End

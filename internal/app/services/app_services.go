@@ -7,6 +7,7 @@ import (
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
 	"github.com/QuocAnh189/GoCoreFoundation/root/jwt"
@@ -21,6 +22,7 @@ type ServiceContainer struct {
 	JwtHelper       jwt.JwtHelper
 
 	HealthService *health.Service
+	LoginService  *login.Service
 	UserService   *users.Service
 }
 
@@ -76,8 +78,12 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	log.Println("> healthSvc...")
 	var healthSvc = health.NewService()
 
+	log.Println("> loginSvc...")
+	loginRepo := login.NewRepository(res.Db)
+	var loginSvc = login.NewService(loginRepo)
+
 	log.Println("> userSvc...")
-	userRepo := users.NewUserRepository(res.Db)
+	userRepo := users.NewRepository(res.Db)
 	var userSvc = users.NewService(userRepo)
 
 	svcs := ServiceContainer{
@@ -86,6 +92,7 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 		SessionProvider: sessionProvider,
 
 		UserService:   userSvc,
+		LoginService:  loginSvc,
 		HealthService: healthSvc,
 	}
 
