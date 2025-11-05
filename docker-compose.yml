@@ -1,0 +1,57 @@
+services:
+  server:
+    container_name: server
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PORT: ${PORT}
+      LOG_FILE_PATH: ${LOG_FILE_PATH}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      CYBERSOURCE_ORG_ID: ${CYBERSOURCE_ORG_ID}
+      CYBERSOURCE_HOST: ${CYBERSOURCE_HOST}
+      CYBERSOURCE_KEY_ID: ${CYBERSOURCE_KEY_ID}
+      CYBERSOURCE_SHARED_SECRET: ${CYBERSOURCE_SHARED_SECRET}
+      SERVER_HOST: ${SERVER_HOST}
+      SERVER_PORT: ${SERVER_PORT}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "33066:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql # Persist database files
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
