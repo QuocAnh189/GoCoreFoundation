@@ -1,15 +1,17 @@
 package response
 
 import (
+	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/locales"
+	appctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
 )
 
-func WriteJson(w http.ResponseWriter, data any, err error) {
+func WriteJson(w http.ResponseWriter, ctx context.Context, data any, err error, statusCode status.Code) {
 	payload := make(map[string]any)
 
 	// If there's data, try to unmarshal data into being the payload
@@ -30,28 +32,34 @@ func WriteJson(w http.ResponseWriter, data any, err error) {
 	}
 
 	if err != nil {
-		var appErr *AppError
-		if errors.As(err, &appErr) {
-			payload["mmessage"] = appErr.Message
-			payload["status"] = appErr.Status
-			payload["debug"] = appErr.Error()
-		} else {
-			payload["mmessage"] = err.Error()
-			payload["status"] = status.INTERNAL
-			payload["debug"] = err.Error()
-		}
-
-	} else {
-		payload["status"] = http.StatusOK
+		payload["error"] = err.Error()
 	}
 
 	// Default to not set if not set
-	if payload["status"] == 0 {
-		payload["status"] = status.UNKNOW
+	if statusCode != 0 {
+		payload["status"] = statusCode
+		payload["message"] = GetMessageFromStatusCode(ctx, statusCode)
+	} else {
+		payload["status"] = status.INTERNAL
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payload)
+}
+
+func GetMessageFromStatusCode(ctx context.Context, statusCode status.Code) string {
+	lan := appctx.GetLocale(ctx)
+
+	switch locales.LanguageType(lan) {
+	case locales.EN:
+		return locales.GetMessageENFromStatus(statusCode)
+	case locales.VN:
+		return locales.GetMessageVNFromStatus(statusCode)
+	case locales.FR:
+		return locales.GetMessageFRFromStatus(statusCode)
+	default:
+		return locales.GetMessageENFromStatus(statusCode)
+	}
 }

@@ -2,11 +2,12 @@ package users
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/bind"
-	ctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
@@ -27,13 +28,13 @@ func (u *Controller) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 	var req ListUserRequest
 
 	if err := bind.ParseQuery(r, &req); err != nil {
-		response.WriteJson(w, nil, response.ErrInvalidParams())
+		response.WriteJson(w, r.Context(), nil, fmt.Errorf("invalid parameters"), status.BAD_REQUEST)
 		return
 	}
 
-	users, pagination, err := u.service.ListUsers(r.Context(), &req)
+	status, users, pagination, err := u.service.ListUsers(r.Context(), &req)
 	if err != nil {
-		response.WriteJson(w, nil, err)
+		response.WriteJson(w, r.Context(), nil, err, status)
 		return
 	}
 
@@ -42,25 +43,16 @@ func (u *Controller) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	}
 
-	response.WriteJson(w, res, nil)
+	response.WriteJson(w, r.Context(), res, nil, status)
 }
 
 // Get - /users/{id}
 func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.PathValue("id")
 
-	language := ctx.GetLocale(r.Context())
-
-	println("language", language)
-
-	user, err := u.service.GetUserByID(r.Context(), userID)
+	status, user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		var appErr response.AppError
-		appErr.BaseError = err
-		appErr.Status = DetermineErrStatus(err)
-		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
-
-		response.WriteJson(w, nil, &appErr)
+		response.WriteJson(w, r.Context(), nil, err, status)
 		return
 	}
 
@@ -68,47 +60,33 @@ func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	response.WriteJson(w, res, nil)
+	response.WriteJson(w, r.Context(), res, nil, 200)
 }
 
 // Get - /users/profile
 func (u *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	var userID string
 
-	language := ctx.GetLocale(r.Context())
-
-	user, err := u.service.GetUserByID(r.Context(), userID)
+	status, res, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		var appErr response.AppError
-		appErr.BaseError = err
-		appErr.Status = DetermineErrStatus(err)
-		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
-
-		response.WriteJson(w, nil, &appErr)
+		response.WriteJson(w, r.Context(), nil, err, status)
 		return
 	}
 
-	response.WriteJson(w, user, nil)
+	response.WriteJson(w, r.Context(), res, nil, status)
 }
 
 // POST - /users/create
 func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.WriteJson(w, nil, response.ErrInvalidParams())
+		response.WriteJson(w, r.Context(), nil, fmt.Errorf("invalid parameters"), status.BAD_REQUEST)
 		return
 	}
 
-	language := ctx.GetLocale(r.Context())
-
-	user, err := u.service.CreateUser(r.Context(), &req)
+	status, user, err := u.service.CreateUser(r.Context(), &req)
 	if err != nil {
-		var appErr response.AppError
-		appErr.BaseError = err
-		appErr.Status = DetermineErrStatus(err)
-		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
-
-		response.WriteJson(w, nil, &appErr)
+		response.WriteJson(w, r.Context(), nil, err, status)
 		return
 	}
 
@@ -116,28 +94,20 @@ func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	response.WriteJson(w, res, nil)
+	response.WriteJson(w, r.Context(), res, nil, status)
 }
 
 // POST - /users/update
 func (u *Controller) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		println("UpdateUser request:", req.UID)
-		response.WriteJson(w, nil, response.ErrInvalidParams())
+		response.WriteJson(w, r.Context(), nil, fmt.Errorf("invalid parameters"), status.BAD_REQUEST)
 		return
 	}
 
-	language := ctx.GetLocale(r.Context())
-
-	user, err := u.service.UpdateUser(r.Context(), &req)
+	status, user, err := u.service.UpdateUser(r.Context(), &req)
 	if err != nil {
-		var appErr response.AppError
-		appErr.BaseError = err
-		appErr.Status = DetermineErrStatus(err)
-		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
-
-		response.WriteJson(w, nil, &appErr)
+		response.WriteJson(w, r.Context(), nil, err, status)
 		return
 	}
 
@@ -145,29 +115,22 @@ func (u *Controller) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	response.WriteJson(w, res, nil)
+	response.WriteJson(w, r.Context(), res, nil, status)
 }
 
 // POST - /users/delete
 func (u *Controller) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	var req DeleteUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.WriteJson(w, nil, response.ErrInvalidParams())
+		response.WriteJson(w, r.Context(), nil, fmt.Errorf("invalid parameters"), status.BAD_REQUEST)
 		return
 	}
 
-	language := ctx.GetLocale(r.Context())
-
-	err := u.service.DeleteUser(r.Context(), req.UserID)
+	status, err := u.service.DeleteUser(r.Context(), req.UserID)
 	if err != nil {
-		var appErr response.AppError
-		appErr.BaseError = err
-		appErr.Status = DetermineErrStatus(err)
-		appErr.Message = GetMessageFromKey(language, DetermineErrKey(err))
-
-		response.WriteJson(w, nil, &appErr)
+		response.WriteJson(w, r.Context(), nil, err, status)
 		return
 	}
 
-	response.WriteJson(w, "Delete user success", nil)
+	response.WriteJson(w, r.Context(), "Delete successfully", nil, 200)
 }

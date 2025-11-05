@@ -2,54 +2,57 @@ package users
 
 import (
 	"regexp"
+
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 )
 
-func ValidateCreateUserRequest(req *CreateUserRequest) error {
+func ValidateCreateUserRequest(req *CreateUserRequest) (status.Code, error) {
 	if req.FirstName == "" {
-		return ErrMissingFirstName
+		return status.USER_MISSING_FIRST_NAME, ErrMissingFirstName
 	}
 
 	if req.LastName == "" {
-		return ErrMissingLastName
+		return status.USER_MISSING_LAST_NAME, ErrMissingLastName
 	}
 
 	if req.Phone == "" {
-		return ErrMissingPhone
+		return status.USER_MISSING_PHONE, ErrMissingPhone
+
 	}
 	if req.Email == "" {
-		return ErrMissingEmail
+		return status.USER_MISSING_EMAIL, ErrMissingEmail
 	}
 
 	if !isValidEmail(req.Email) {
-		return ErrInvalidEmail
+		return status.USER_INVALID_EMAIL, ErrInvalidEmail
 	}
 
 	if req.Role != "" && !isValidRole(req.Role) {
-		return ErrInvalidRole
+		return status.USER_INVALID_ROLE, ErrInvalidRole
 	}
 
-	return nil
+	return status.SUCCESS, nil
 }
 
 // validateUser performs validation on user data.
-func ValidateUpdateUserRequest(req *UpdateUserRequest) error {
+func ValidateUpdateUserRequest(req *UpdateUserRequest) (status.Code, error) {
 	if req.UID == "" {
-		return ErrInvalidUserID
+		return status.USER_INVALID_ID, ErrInvalidUserID
 	}
 
 	if req.Email != nil && !isValidEmail(*req.Email) {
-		return ErrInvalidEmail
+		return status.USER_INVALID_EMAIL, ErrInvalidEmail
 	}
 
 	if req.Role != nil && !isValidRole(*req.Role) {
-		return ErrInvalidRole
+		return status.USER_INVALID_ROLE, ErrInvalidRole
 	}
 
 	if req.Status != nil && !isValidStatus(*req.Status) {
-		return ErrInvalidStatus
+		return status.USER_INVALID_STATUS, ErrInvalidStatus
 	}
 
-	return nil
+	return status.SUCCESS, nil
 }
 
 // isValidEmail checks if the email format is valid.

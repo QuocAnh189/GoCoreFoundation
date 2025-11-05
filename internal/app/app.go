@@ -11,6 +11,7 @@ import (
 	approutes "github.com/QuocAnh189/GoCoreFoundation/internal/app/routes"
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/configs"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	middleware "github.com/QuocAnh189/GoCoreFoundation/internal/middlewares"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
@@ -70,7 +71,7 @@ func (a *App) Init() error {
 	a.Services = services
 
 	defaultRouteHandler := func(w http.ResponseWriter, r *http.Request) {
-		response.WriteJson(w, nil, fmt.Errorf("route not found"))
+		response.WriteJson(w, r.Context(), nil, fmt.Errorf("route not found"), status.NOT_FOUND)
 	}
 	a.Server = root.NewServer(a.Resource.HostConfig, defaultRouteHandler)
 

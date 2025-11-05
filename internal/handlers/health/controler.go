@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
 )
 
@@ -32,5 +33,5 @@ func (c *Controller) HandlePing(w http.ResponseWriter, r *http.Request) {
 		res.DatabasePing = "Database live " + time.Now().Format(time.RFC3339)
 	}
 
-	response.WriteJson(w, res, nil)
+	response.WriteJson(w, r.Context(), res, nil, status.SUCCESS)
 }
