@@ -11,11 +11,12 @@ import (
 )
 
 type Env struct {
-	DBEnv             *db.Config
-	ServerEnv         *ServerConfig
-	HostConfig        HostConfig
-	SharedKeyBytes    []byte
-	RootSessionDriver string
+	DBEnv                 *db.Config
+	ServerEnv             *ServerConfig
+	HostConfig            HostConfig
+	SharedKeyBytes        []byte
+	RootSessionDriver     string
+	SerializedSessionFile string
 }
 
 func NewEnv(envpath string) (*Env, error) {
@@ -43,8 +44,9 @@ func NewEnv(envpath string) (*Env, error) {
 			HttpsCertFile: getConfigOptional("HTTPS_CERT_FILE"),
 			HttpsKeyFile:  getConfigOptional("HTTPS_KEY_FILE"),
 		},
-		SharedKeyBytes:    getFileBytesConfig("ROOT_SHARED_KEY"),
-		RootSessionDriver: getConfig("ROOT_SESSION_DRIVER"),
+		SharedKeyBytes:        getFileBytesConfig("ROOT_SHARED_KEY"),
+		RootSessionDriver:     getConfig("ROOT_SESSION_DRIVER"),
+		SerializedSessionFile: getConfig("SERIALIZED_SESSION_FILE"),
 	}
 	return result, nil
 }

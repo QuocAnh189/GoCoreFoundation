@@ -88,6 +88,7 @@ func (a *App) Init() error {
 	a.setupShutdownHooks(a.Server, services)
 
 	// Reload sessions
+	a.reloadSessions()
 	return nil
 }
 
@@ -140,5 +141,28 @@ func (a *App) setupShutdownHooks(rootSvr *root.Server, _ *appservices.ServiceCon
 			log.Println("Stopping job manager...")
 			a.JobManager.Stop()
 		}
+
+		sessionFile := a.Resource.Env.SerializedSessionFile
+		if sessionFile == "" {
+			return
+		}
+
+		log.Println("Serializing sessions...")
+		err := a.SerializeSessions(sessionFile)
+		if err != nil {
+			log.Printf("Failed to serialize sessions: %v\n", err)
+		} else {
+			log.Println("Sessions serialized!")
+		}
 	})
+}
+
+func (a *App) reloadSessions() {
+	// Reload old sessions
+	if a.Resource.Env.SerializedSessionFile != "" {
+		log.Println("Reloading old sessions...")
+		if err := a.ReloadSessions(a.Resource.Env.SerializedSessionFile); err != nil {
+			log.Printf("Failed to reload old sessions: %v\n", err)
+		}
+	}
 }
