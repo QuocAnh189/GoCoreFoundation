@@ -27,3 +27,11 @@ type TwilioConfig struct {
 	FromPhoneNumber     *string
 	MessagingServiceSID *string
 }
+
+type MailerConfig struct {
+	SMTPHost *string
+	SMTPPort *int
+	Username *string
+	Password *string
+	FromName *string
+}

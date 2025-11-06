@@ -14,6 +14,7 @@ type Env struct {
 	ServerEnv             *ServerConfig
 	HostConfig            *HostConfig
 	TwilioConfig          *TwilioConfig
+	MailerConfig          *MailerConfig
 	SharedKeyBytes        []byte
 	RootSessionDriver     string
 	SerializedSessionFile string
@@ -50,6 +51,13 @@ func NewEnv(envpath string) (*Env, error) {
 			FromPhoneNumber:     getConfigOptional("TWILIO_FROM_PHONE_NUMBER"),
 			MessagingServiceSID: getConfigOptional("TWILIO_MESSAGING_SERVICE_SID"),
 		},
+		MailerConfig: &MailerConfig{
+			SMTPHost: getConfigOptional("MAIL_HOST"),
+			SMTPPort: getIntConfigOptional("MAIL_PORT"),
+			Username: getConfigOptional("MAIL_USER"),
+			Password: getConfigOptional("MAIL_PASSWORD"),
+			FromName: getConfigOptional("MAIL_FROM"),
+		},
 		SharedKeyBytes:        getFileBytesConfig("ROOT_SHARED_KEY"),
 		RootSessionDriver:     getConfig("ROOT_SESSION_DRIVER"),
 		SerializedSessionFile: getConfig("SERIALIZED_SESSION_FILE"),
@@ -72,6 +80,15 @@ func getConfigOptional(key string) *string {
 	}
 	val := os.Getenv(key)
 	return &val
+}
+
+func getIntConfigOptional(key string) *int {
+	if os.Getenv(key) == "" {
+		return nil
+	}
+	val := os.Getenv(key)
+	intVal, _ := strconv.Atoi(val)
+	return &intVal
 }
 
 func getConfig(key string) string {

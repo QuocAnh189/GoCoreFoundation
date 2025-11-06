@@ -9,8 +9,10 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/services/mail"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
+	"github.com/QuocAnh189/GoCoreFoundation/pkg/mailer"
 	"github.com/QuocAnh189/GoCoreFoundation/root/jwt"
 	rootSession "github.com/QuocAnh189/GoCoreFoundation/root/session"
 	"github.com/QuocAnh189/GoCoreFoundation/root/sessionprovider"
@@ -95,8 +97,28 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 		smsSvc = sms.NewService(smsProvider)
 	}
 
+	log.Println("> mailerSvc...")
+	var mailSvc *mail.Service
+	{
+		mailerEnv := res.Env.MailerConfig
+		var mailClient *mailer.Client
+		if mailerEnv.SMTPHost != nil && mailerEnv.SMTPPort != nil && mailerEnv.Username != nil && mailerEnv.Password != nil && mailerEnv.FromName != nil {
+			mailClient = mailer.NewClient(
+				*mailerEnv.SMTPHost,
+				*mailerEnv.SMTPPort,
+				*mailerEnv.Username,
+				*mailerEnv.Password,
+				*mailerEnv.FromName,
+			)
+		} else {
+			log.Println("Mailer config not fully provided; mailer service will not be initialized")
+		}
+
+		mailSvc = mail.NewService(mailClient)
+	}
+
 	log.Println("> healthSvc...")
-	var healthSvc = health.NewService(smsSvc)
+	var healthSvc = health.NewService(smsSvc, mailSvc)
 
 	log.Println("> loginSvc...")
 	loginRepo := login.NewRepository(res.Db)
