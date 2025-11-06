@@ -1,10 +1,19 @@
 package health
 
+import (
+	"time"
+
+	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
+)
+
 type Service struct {
+	smsSvc *sms.Service
 }
 
-func NewService() *Service {
-	return &Service{}
+func NewService(smsSvc *sms.Service) *Service {
+	return &Service{
+		smsSvc: smsSvc,
+	}
 }
 
 // Check Stripe
@@ -28,6 +37,12 @@ func (s *Service) CheckPlaid() bool {
 }
 
 // Check Twilio
-func (s *Service) CheckTwilio() bool {
-	return true
+func (s *Service) CheckTwilio() string {
+	err := s.smsSvc.SendSmsToPhone("+84905636640", "Ping test message from service ID")
+	if err != nil {
+		// res.SmsMessage = "can not send sms: " + err.Error()
+		return "can not send sms: " + err.Error()
+	}
+
+	return "SMS sent successfully at " + time.Now().Format(time.RFC3339)
 }

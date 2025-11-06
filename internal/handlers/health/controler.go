@@ -33,5 +33,7 @@ func (c *Controller) HandlePing(w http.ResponseWriter, r *http.Request) {
 		res.DatabasePing = "Database live " + time.Now().Format(time.RFC3339)
 	}
 
+	res.TwilioSms = c.service.CheckTwilio()
+
 	response.WriteJson(w, r.Context(), res, nil, status.SUCCESS)
 }

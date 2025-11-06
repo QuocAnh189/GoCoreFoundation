@@ -13,6 +13,7 @@ type Env struct {
 	DBEnv                 *DBConfig
 	ServerEnv             *ServerConfig
 	HostConfig            *HostConfig
+	TwilioConfig          *TwilioConfig
 	SharedKeyBytes        []byte
 	RootSessionDriver     string
 	SerializedSessionFile string
@@ -42,6 +43,12 @@ func NewEnv(envpath string) (*Env, error) {
 			ServerPort:    getConfig("SERVER_PORT"),
 			HttpsCertFile: getConfigOptional("HTTPS_CERT_FILE"),
 			HttpsKeyFile:  getConfigOptional("HTTPS_KEY_FILE"),
+		},
+		TwilioConfig: &TwilioConfig{
+			AccountSID:          getConfigOptional("TWILIO_ACCOUNT_SID"),
+			AuthToken:           getConfigOptional("TWILIO_AUTH_TOKEN"),
+			FromPhoneNumber:     getConfigOptional("TWILIO_FROM_PHONE_NUMBER"),
+			MessagingServiceSID: getConfigOptional("TWILIO_MESSAGING_SERVICE_SID"),
 		},
 		SharedKeyBytes:        getFileBytesConfig("ROOT_SHARED_KEY"),
 		RootSessionDriver:     getConfig("ROOT_SESSION_DRIVER"),

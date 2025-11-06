@@ -32,11 +32,6 @@ func (a *AppResource) GetRequestUID(r *http.Request) (int64, error) {
 		return 0, err
 	}
 
-	// ## We can't do this because sometimes you want the uid even if not authenticated
-	// if isSecure, ok := sess.Get("is_secure"); !ok || !isSecure.(bool) {
-	// 	return 0, fmt.Errorf("session is not secure, auth required")
-	// }
-
 	id, ok := sess.UID()
 	if !ok {
 		return 0, fmt.Errorf("uid missing from session (did you forget to send the Authorization header?)")

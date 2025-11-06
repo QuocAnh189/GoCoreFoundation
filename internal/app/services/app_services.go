@@ -9,6 +9,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
 	"github.com/QuocAnh189/GoCoreFoundation/root/jwt"
 	rootSession "github.com/QuocAnh189/GoCoreFoundation/root/session"
@@ -75,8 +76,27 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 		}
 	}
 
+	log.Println("> smsSvc...")
+	var smsSvc *sms.Service
+	{
+		twilioEnv := res.Env.TwilioConfig
+		var smsProvider sms.Provider
+		if twilioEnv.AccountSID != nil && twilioEnv.AuthToken != nil && twilioEnv.FromPhoneNumber != nil && twilioEnv.MessagingServiceSID != nil {
+			smsProvider = sms.NewTwilioSmsProvider(
+				*twilioEnv.AccountSID,
+				*twilioEnv.AuthToken,
+				*twilioEnv.FromPhoneNumber,
+				*twilioEnv.MessagingServiceSID,
+			)
+		} else {
+			log.Println("Twilio SMS config not fully provided; using NoOp SMS provider")
+		}
+
+		smsSvc = sms.NewService(smsProvider)
+	}
+
 	log.Println("> healthSvc...")
-	var healthSvc = health.NewService()
+	var healthSvc = health.NewService(smsSvc)
 
 	log.Println("> loginSvc...")
 	loginRepo := login.NewRepository(res.Db)
