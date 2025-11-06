@@ -1,5 +1,13 @@
 package configs
 
+type DBConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
+	SSLMode  string
+}
 type ServerConfig struct {
 	Port        string
 	LogFilePath string

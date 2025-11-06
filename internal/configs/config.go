@@ -6,14 +6,13 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	"github.com/joho/godotenv"
 )
 
 type Env struct {
-	DBEnv                 *db.Config
+	DBEnv                 *DBConfig
 	ServerEnv             *ServerConfig
-	HostConfig            HostConfig
+	HostConfig            *HostConfig
 	SharedKeyBytes        []byte
 	RootSessionDriver     string
 	SerializedSessionFile string
@@ -26,7 +25,7 @@ func NewEnv(envpath string) (*Env, error) {
 	}
 
 	result := &Env{
-		DBEnv: &db.Config{
+		DBEnv: &DBConfig{
 			Host:     getConfig("DB_HOST"),
 			Port:     getConfig("DB_PORT"),
 			User:     getConfig("DB_USER"),
@@ -38,7 +37,7 @@ func NewEnv(envpath string) (*Env, error) {
 			Port:        getConfig("SERVER_PORT"),
 			LogFilePath: getConfig("LOG_FILE_PATH"),
 		},
-		HostConfig: HostConfig{
+		HostConfig: &HostConfig{
 			ServerHost:    getConfig("SERVER_HOST"),
 			ServerPort:    getConfig("SERVER_PORT"),
 			HttpsCertFile: getConfigOptional("HTTPS_CERT_FILE"),

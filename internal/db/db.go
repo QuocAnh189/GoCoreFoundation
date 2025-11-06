@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QuocAnh189/GoCoreFoundation/internal/configs"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/colors"
 	"github.com/go-sql-driver/mysql"
 )
@@ -17,23 +18,13 @@ const (
 	DatabaseTimeout = time.Second * 5
 )
 
-// Config holds database connection parameters.
-type Config struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	Name     string
-	SSLMode  string
-}
-
 // Database wraps a sql.DB connection.
 type Database struct {
 	db *sql.DB
 }
 
 // NewDatabase initializes a new database connection.
-func NewDatabase(config *Config) (*Database, error) {
+func NewDatabase(config *configs.DBConfig) (*Database, error) {
 	address := fmt.Sprintf("%s:%s", config.Host, config.Port)
 
 	mysqlCfg := mysql.NewConfig()
