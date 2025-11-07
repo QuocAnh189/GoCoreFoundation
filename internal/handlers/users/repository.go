@@ -121,21 +121,7 @@ func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserR
 			return nil, fmt.Errorf("scan error: %v", err)
 		}
 
-		user := &User{
-			ID:         su.ID,
-			FirstName:  su.FirstName.String,
-			MiddleName: &su.MiddleName.String,
-			LastName:   su.LastName.String,
-			Email:      su.Email.String,
-			Phone:      su.Phone.String,
-			Status:     su.Status.String,
-			Role:       Role(su.Role.String),
-			CreateID:   &su.CreateID.Int64,
-			CreateDT:   su.CreateDT.Time,
-			ModifyID:   &su.ModifyID.Int64,
-			ModifyDT:   su.ModifyDT.Time,
-		}
-		users = append(users, user)
+		users = append(users, MapSQLToUser(&su))
 	}
 
 	return &ListUserResponse{
@@ -167,20 +153,7 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
 		return nil, fmt.Errorf("scan error: %v", err)
 	}
 
-	user := &User{
-		ID:         su.ID,
-		FirstName:  su.FirstName.String,
-		MiddleName: &su.MiddleName.String,
-		LastName:   su.LastName.String,
-		Email:      su.Email.String,
-		Phone:      su.Phone.String,
-		Status:     su.Status.String,
-		Role:       Role(su.Role.String),
-		CreateID:   &su.CreateID.Int64,
-		CreateDT:   su.CreateDT.Time,
-		ModifyID:   &su.ModifyID.Int64,
-		ModifyDT:   su.ModifyDT.Time,
-	}
+	user := MapSQLToUser(&su)
 
 	return user, nil
 }
@@ -208,20 +181,7 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, erro
 		return nil, fmt.Errorf("scan error: %v", err)
 	}
 
-	user := &User{
-		ID:         su.ID,
-		FirstName:  su.FirstName.String,
-		MiddleName: &su.MiddleName.String,
-		LastName:   su.LastName.String,
-		Email:      su.Email.String,
-		Phone:      su.Phone.String,
-		Status:     su.Status.String,
-		Role:       Role(su.Role.String),
-		CreateID:   &su.CreateID.Int64,
-		CreateDT:   su.CreateDT.Time,
-		ModifyID:   &su.ModifyID.Int64,
-		ModifyDT:   su.ModifyDT.Time,
-	}
+	user := MapSQLToUser(&su)
 
 	return user, nil
 }

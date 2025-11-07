@@ -28,3 +28,20 @@ func BuildUpdateUserDTO(req *UpdateUserRequest) *UpdateUserDTO {
 		Status:     req.Status,
 	}
 }
+
+func MapSQLToUser(su *sqlUser) *User {
+	return &User{
+		ID:         su.ID,
+		FirstName:  su.FirstName.String,
+		MiddleName: &su.MiddleName.String,
+		LastName:   su.LastName.String,
+		Email:      su.Email.String,
+		Phone:      su.Phone.String,
+		Status:     su.Status.String,
+		Role:       Role(su.Role.String),
+		CreateID:   &su.CreateID.Int64,
+		CreateDT:   su.CreateDT.Time,
+		ModifyID:   &su.ModifyID.Int64,
+		ModifyDT:   su.ModifyDT.Time,
+	}
+}
