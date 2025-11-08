@@ -32,9 +32,9 @@ func (u *Controller) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, users, pagination, err := u.service.ListUsers(r.Context(), &req)
+	statusCode, users, pagination, err := u.service.ListUsers(r.Context(), &req)
 	if err != nil {
-		response.WriteJson(w, r.Context(), nil, err, status)
+		response.WriteJson(w, r.Context(), nil, err, statusCode)
 		return
 	}
 
@@ -43,16 +43,16 @@ func (u *Controller) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	}
 
-	response.WriteJson(w, r.Context(), res, nil, status)
+	response.WriteJson(w, r.Context(), res, nil, statusCode)
 }
 
 // Get - /users/{id}
 func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.PathValue("id")
 
-	status, user, err := u.service.GetUserByID(r.Context(), userID)
+	statusCode, user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		response.WriteJson(w, r.Context(), nil, err, status)
+		response.WriteJson(w, r.Context(), nil, err, statusCode)
 		return
 	}
 
@@ -60,20 +60,20 @@ func (u *Controller) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	response.WriteJson(w, r.Context(), res, nil, 200)
+	response.WriteJson(w, r.Context(), res, nil, statusCode)
 }
 
 // Get - /users/profile
 func (u *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	var userID string
 
-	status, res, err := u.service.GetUserByID(r.Context(), userID)
+	statusCode, res, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		response.WriteJson(w, r.Context(), nil, err, status)
+		response.WriteJson(w, r.Context(), nil, err, statusCode)
 		return
 	}
 
-	response.WriteJson(w, r.Context(), res, nil, status)
+	response.WriteJson(w, r.Context(), res, nil, statusCode)
 }
 
 // POST - /users/create
@@ -84,9 +84,9 @@ func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, user, err := u.service.CreateUser(r.Context(), &req)
+	statusCode, user, err := u.service.CreateUser(r.Context(), &req)
 	if err != nil {
-		response.WriteJson(w, r.Context(), nil, err, status)
+		response.WriteJson(w, r.Context(), nil, err, statusCode, GetArgsByStatatus(statusCode)...)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	response.WriteJson(w, r.Context(), res, nil, status)
+	response.WriteJson(w, r.Context(), res, nil, statusCode)
 }
 
 // POST - /users/update
@@ -105,9 +105,9 @@ func (u *Controller) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, user, err := u.service.UpdateUser(r.Context(), &req)
+	statusCode, user, err := u.service.UpdateUser(r.Context(), &req)
 	if err != nil {
-		response.WriteJson(w, r.Context(), nil, err, status)
+		response.WriteJson(w, r.Context(), nil, err, statusCode, GetArgsByStatatus(statusCode)...)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (u *Controller) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	response.WriteJson(w, r.Context(), res, nil, status)
+	response.WriteJson(w, r.Context(), res, nil, statusCode)
 }
 
 // POST - /users/delete
@@ -126,11 +126,11 @@ func (u *Controller) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, err := u.service.DeleteUser(r.Context(), req.UserID)
+	statusCode, err := u.service.DeleteUser(r.Context(), req.UserID)
 	if err != nil {
-		response.WriteJson(w, r.Context(), nil, err, status)
+		response.WriteJson(w, r.Context(), nil, err, statusCode)
 		return
 	}
 
-	response.WriteJson(w, r.Context(), "Delete successfully", nil, 200)
+	response.WriteJson(w, r.Context(), "Delete successfully", nil, statusCode)
 }

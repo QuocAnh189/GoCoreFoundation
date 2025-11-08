@@ -1,7 +1,9 @@
 package users
 
+import "github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
+
 func BuildCreateUserDTO(req *CreateUserRequest) *CreateUserDTO {
-	role := RoleUser
+	role := enum.RoleUser
 	if req.Role != "" {
 		role = req.Role
 	}
@@ -38,7 +40,7 @@ func MapSQLToUser(su *sqlUser) *User {
 		Email:      su.Email.String,
 		Phone:      su.Phone.String,
 		Status:     su.Status.String,
-		Role:       Role(su.Role.String),
+		Role:       enum.ERole(su.Role.String),
 		CreateID:   &su.CreateID.Int64,
 		CreateDT:   su.CreateDT.Time,
 		ModifyID:   &su.ModifyID.Int64,

@@ -4,21 +4,6 @@ import (
 	"errors"
 )
 
-type Role string
-type Status string
-
-const (
-	RoleAdmin Role = "admin"
-	RoleUser  Role = "user"
-	RoleGuest Role = "guest"
-
-	StatusActive   Status = "ACTIVE"
-	StatusInactive Status = "INACTIVE"
-	StatusBanned   Status = "BANNED"
-
-	DefaultLang = "vn"
-)
-
 var (
 	ErrInvalidParameter = errors.New("invalid parameter")
 	ErrInvalidUserID    = errors.New("invalid user ID")

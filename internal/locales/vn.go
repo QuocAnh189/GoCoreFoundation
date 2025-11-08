@@ -1,12 +1,16 @@
 package locales
 
-import "github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+import (
+	"fmt"
+
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+)
 
 var (
 	VN LanguageType = "vn"
 )
 
-func GetMessageVNFromStatus(statusCode status.Code) string {
+func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 	switch statusCode {
 	case status.USER_INVALID_PARAMS:
 		return "Tham số không hợp lệ"
@@ -25,9 +29,9 @@ func GetMessageVNFromStatus(statusCode status.Code) string {
 	case status.USER_MISSING_PHONE:
 		return "Thiếu số điện thoại"
 	case status.USER_INVALID_ROLE:
-		return "Vai trò không hợp lệ"
+		return fmt.Sprintf("Vai trò không hợp lệ. Các vai trò hợp lệ là: %v", args)
 	case status.USER_INVALID_STATUS:
-		return "Trạng thái không hợp lệ"
+		return fmt.Sprintf("Trạng thái không hợp lệ. Các trạng thái hợp lệ là: %v", args)
 	case status.SUCCESS:
 		return "Thành công"
 	default:

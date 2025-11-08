@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 )
 
@@ -39,7 +40,7 @@ func (j *UserJob) Run(ctx context.Context) error {
 		LastName:  "Doe",
 		Phone:     "1234567890",
 		Email:     "join@gmail.com",
-		Role:      users.RoleUser,
+		Role:      enum.RoleUser,
 	}
 
 	_, _, err := j.userSvc.CreateUser(ctx, data)

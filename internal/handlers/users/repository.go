@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
@@ -205,7 +206,7 @@ func (r *Repository) Create(ctx context.Context, dto *CreateUserDTO) (*User, err
 		dto.Phone,
 		dto.Email,
 		dto.Role,
-		StatusActive,
+		enum.StatusActive,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %v", err)

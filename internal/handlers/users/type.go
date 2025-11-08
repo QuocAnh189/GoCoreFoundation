@@ -3,6 +3,7 @@ package users
 import (
 	"time"
 
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
 )
 
@@ -13,7 +14,7 @@ type User struct {
 	LastName   string     `json:"last_name"`
 	Phone      string     `json:"phone"`
 	Email      string     `json:"email"`
-	Role       Role       `json:"role"`
+	Role       enum.ERole `json:"role"`
 	Status     string     `json:"status"`
 	CreateID   *int64     `json:"create_id"`
 	CreateDT   time.Time  `json:"create_dt"`
@@ -32,7 +33,7 @@ type ListUserRequest struct {
 }
 
 type ListUserResponse struct {
-	Users      []*User                `json:"items"`
+	Users      []*User                `json:"result"`
 	Pagination *pagination.Pagination `json:"metadata"`
 }
 
@@ -41,12 +42,12 @@ type GetUserResponse struct {
 }
 
 type CreateUserRequest struct {
-	FirstName  string `json:"first_name"`
-	MiddleName string `json:"middle_name,omitempty"`
-	LastName   string `json:"last_name"`
-	Phone      string `json:"phone"`
-	Email      string `json:"email"`
-	Role       Role   `json:"role,omitempty"`
+	FirstName  string     `json:"first_name"`
+	MiddleName string     `json:"middle_name,omitempty"`
+	LastName   string     `json:"last_name"`
+	Phone      string     `json:"phone"`
+	Email      string     `json:"email"`
+	Role       enum.ERole `json:"role,omitempty"`
 }
 
 type CreateUserResponse struct {
@@ -54,14 +55,14 @@ type CreateUserResponse struct {
 }
 
 type UpdateUserRequest struct {
-	UID        string  `json:"uid"`
-	FirstName  *string `json:"first_name,omitempty"`
-	MiddleName *string `json:"middle_name,omitempty"`
-	LastName   *string `json:"last_name,omitempty"`
-	Phone      *string `json:"phone,omitempty"`
-	Email      *string `json:"email,omitempty"`
-	Role       *Role   `json:"role,omitempty"`
-	Status     *Status `json:"status,omitempty"`
+	UID        string        `json:"uid"`
+	FirstName  *string       `json:"first_name,omitempty"`
+	MiddleName *string       `json:"middle_name,omitempty"`
+	LastName   *string       `json:"last_name,omitempty"`
+	Phone      *string       `json:"phone,omitempty"`
+	Email      *string       `json:"email,omitempty"`
+	Role       *enum.ERole   `json:"role,omitempty"`
+	Status     *enum.EStatus `json:"status,omitempty"`
 }
 
 type UpdateUserResponse struct {

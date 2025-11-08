@@ -1,12 +1,16 @@
 package locales
 
-import "github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+import (
+	"fmt"
+
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+)
 
 var (
 	FR LanguageType = "fr"
 )
 
-func GetMessageFRFromStatus(statusCode status.Code) string {
+func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 	switch statusCode {
 	case status.USER_INVALID_PARAMS:
 		return "Paramètres invalides"
@@ -25,9 +29,9 @@ func GetMessageFRFromStatus(statusCode status.Code) string {
 	case status.USER_MISSING_PHONE:
 		return "Le téléphone est requis"
 	case status.USER_INVALID_ROLE:
-		return "Rôle invalide"
+		return fmt.Sprintf("Rôle invalide. Valid rôle are: %v", args)
 	case status.USER_INVALID_STATUS:
-		return "Statut invalide"
+		return fmt.Sprintf("Statut invalide. Valid statuts are: %v", args)
 	case status.SUCCESS:
 		return "Succès"
 	default:

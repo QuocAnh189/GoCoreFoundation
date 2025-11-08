@@ -11,7 +11,7 @@ import (
 	appctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
 )
 
-func WriteJson(w http.ResponseWriter, ctx context.Context, data any, err error, statusCode status.Code) {
+func WriteJson(w http.ResponseWriter, ctx context.Context, data any, err error, statusCode status.Code, args ...any) {
 	payload := make(map[string]any)
 
 	// If there's data, try to unmarshal data into being the payload
@@ -38,7 +38,7 @@ func WriteJson(w http.ResponseWriter, ctx context.Context, data any, err error, 
 	// Default to not set if not set
 	if statusCode != 0 {
 		payload["status"] = statusCode
-		payload["message"] = GetMessageFromStatusCode(ctx, statusCode)
+		payload["message"] = GetMessageFromStatusCode(ctx, statusCode, args...)
 	} else {
 		payload["status"] = status.INTERNAL
 	}
@@ -49,17 +49,17 @@ func WriteJson(w http.ResponseWriter, ctx context.Context, data any, err error, 
 	json.NewEncoder(w).Encode(payload)
 }
 
-func GetMessageFromStatusCode(ctx context.Context, statusCode status.Code) string {
+func GetMessageFromStatusCode(ctx context.Context, statusCode status.Code, args ...any) string {
 	lan := appctx.GetLocale(ctx)
 
 	switch locales.LanguageType(lan) {
 	case locales.EN:
-		return locales.GetMessageENFromStatus(statusCode)
+		return locales.GetMessageENFromStatus(statusCode, args...)
 	case locales.VN:
-		return locales.GetMessageVNFromStatus(statusCode)
+		return locales.GetMessageVNFromStatus(statusCode, args...)
 	case locales.FR:
-		return locales.GetMessageFRFromStatus(statusCode)
+		return locales.GetMessageFRFromStatus(statusCode, args...)
 	default:
-		return locales.GetMessageENFromStatus(statusCode)
+		return locales.GetMessageENFromStatus(statusCode, args...)
 	}
 }
