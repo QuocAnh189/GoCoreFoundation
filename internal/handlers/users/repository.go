@@ -9,18 +9,28 @@ import (
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
 )
 
 // IRepository defines the user repository interface.
 type IRepository interface {
+	CreateUserWithAssociations(ctx context.Context, dto *CreateUserDTO) (*User, error)
+
+	// users
 	List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error)
 	FindByID(ctx context.Context, id string) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
-	Create(ctx context.Context, dto *CreateUserDTO) (*User, error)
-	Update(ctx context.Context, dto *UpdateUserDTO) (*User, error)
+	Create(ctx context.Context, tx *sql.Tx, dto *CreateUserDTO) (int64, error) // Add tx parameter
+	Update(ctx context.Context, dto *UpdateUserDTO) (int64, error)
 	Delete(ctx context.Context, id string) error
+
+	// aliases
+	StoreUserAlias(ctx context.Context, tx *sql.Tx, dto *CreateAliasDTO) error // Add tx parameter
+
+	// logins
+	StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLoginDTO) error // Add tx parameter
 }
 
 // UserRepository implements the IRepository interface.
@@ -50,6 +60,72 @@ type sqlUser struct {
 	ModifyDT   sql.NullTime
 }
 
+// CreateWithAliases creates a user and their aliases in a single transaction.
+func (r *Repository) CreateUserWithAssociations(ctx context.Context, dto *CreateUserDTO) (*User, error) {
+	handler := func(tx *sql.Tx) error {
+		// Create the user
+		_, err := r.Create(ctx, tx, dto)
+		if err != nil {
+			return fmt.Errorf("failed to create user in transaction: %v", err)
+		}
+
+		// Store aliases
+		for _, aka := range []string{dto.Email, dto.Phone} {
+			if aka == "" {
+				continue // Skip empty aliases
+			}
+			uuid, err := uuid.GenerateUUIDV7()
+			if err != nil {
+				return fmt.Errorf("failed to generate UUID for alias: %v", err)
+			}
+
+			aliasDTO := &CreateAliasDTO{
+				ID:        uuid,
+				UID:       dto.ID,
+				AliasName: aka,
+			}
+			if err := r.StoreUserAlias(ctx, tx, aliasDTO); err != nil {
+				return fmt.Errorf("failed to store user alias in transaction: %v", err)
+			}
+		}
+
+		hashedPassword, err := utils.DefaultHasher.Hash(dto.Password)
+		if err != nil {
+			return fmt.Errorf("hashing password error: %v", err)
+		}
+
+		// Store login
+		loginUUID, err := uuid.GenerateUUIDV7()
+		if err != nil {
+			return fmt.Errorf("failed to generate UUID for login: %v", err)
+		}
+
+		loginDTO := &CreateLoginDTO{
+			ID:       loginUUID,
+			UID:      dto.ID,
+			HassPass: hashedPassword,
+		}
+		if err := r.StoreLogin(ctx, tx, loginDTO); err != nil {
+			return fmt.Errorf("failed to store user login in transaction: %v", err)
+		}
+
+		return nil
+	}
+
+	err := r.db.WithTransaction(handler)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := r.FindByID(ctx, dto.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // List retrieves a paginated list of users with optional search and sorting.
 func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error) {
 	var queryBuilder strings.Builder
@@ -75,7 +151,7 @@ func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserR
 		countQuery += ` WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? AND deleted_dt IS NULL`
 	}
 	var total int64
-	countRow := r.db.QueryRow(ctx, countQuery, args...)
+	countRow := r.db.QueryRow(ctx, nil, countQuery, args...)
 	if err := countRow.Scan(&total); err != nil {
 		return nil, fmt.Errorf("failed to count users: %v", err)
 	}
@@ -104,7 +180,7 @@ func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserR
 	}
 
 	// Execute query
-	rows, err := r.db.Query(ctx, queryBuilder.String(), args...)
+	rows, err := r.db.Query(ctx, nil, queryBuilder.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list users: %v", err)
 	}
@@ -140,7 +216,7 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
 		WHERE id = ? AND deleted_dt IS NULL
 	`
 
-	result := r.db.QueryRow(ctx, query, id)
+	result := r.db.QueryRow(ctx, nil, query, id)
 
 	var su sqlUser
 	err := result.Scan(
@@ -167,7 +243,7 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, erro
 		FROM users
 		WHERE email = ? AND deleted_dt IS NULL
 	`
-	result := r.db.QueryRow(ctx, query, email)
+	result := r.db.QueryRow(ctx, nil, query, email)
 
 	var su sqlUser
 	err := result.Scan(
@@ -188,18 +264,13 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, erro
 }
 
 // Create inserts a new user into the database.
-func (r *Repository) Create(ctx context.Context, dto *CreateUserDTO) (*User, error) {
-	uuid, err := uuid.GenerateUUIDV7()
-	if uuid == "" {
-		return nil, fmt.Errorf("failed to generate UUIDv7: %v", err)
-	}
-
+func (r *Repository) Create(ctx context.Context, tx *sql.Tx, dto *CreateUserDTO) (int64, error) {
 	query := `
 		INSERT INTO users (id, first_name, middle_name, last_name, phone, email, role, status)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	_, err = r.db.Exec(ctx, query,
-		uuid,
+	result, err := r.db.Exec(ctx, tx, query,
+		dto.ID,
 		dto.FirstName,
 		dto.MiddleName,
 		dto.LastName,
@@ -209,14 +280,19 @@ func (r *Repository) Create(ctx context.Context, dto *CreateUserDTO) (*User, err
 		enum.StatusActive,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %v", err)
+		return 0, fmt.Errorf("failed to create user: %v", err)
 	}
 
-	return r.FindByID(ctx, uuid)
+	insertedID, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("failed to retrieve last insert ID: %v", err)
+	}
+
+	return insertedID, nil
 }
 
 // Update updates an existing user.
-func (r *Repository) Update(ctx context.Context, dto *UpdateUserDTO) (*User, error) {
+func (r *Repository) Update(ctx context.Context, dto *UpdateUserDTO) (int64, error) {
 	query := `
 		UPDATE users
 		SET first_name = COALESCE(?, first_name),
@@ -228,7 +304,7 @@ func (r *Repository) Update(ctx context.Context, dto *UpdateUserDTO) (*User, err
 			status = COALESCE(?, status)
 		WHERE id = ? AND deleted_dt IS NULL
 	`
-	_, err := r.db.Exec(ctx, query,
+	result, err := r.db.Exec(ctx, nil, query,
 		dto.FirstName,
 		dto.MiddleName,
 		dto.LastName,
@@ -239,10 +315,15 @@ func (r *Repository) Update(ctx context.Context, dto *UpdateUserDTO) (*User, err
 		dto.ID,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update user: %v", err)
+		return 0, fmt.Errorf("failed to update user: %v", err)
 	}
 
-	return r.FindByID(ctx, dto.ID)
+	affectedRows, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to retrieve affected rows: %v", err)
+	}
+
+	return affectedRows, nil
 }
 
 // Delete removes a user by ID.
@@ -252,9 +333,45 @@ func (r *Repository) Delete(ctx context.Context, id string) error {
 		SET deleted_dt = ?
 		WHERE id = ?
 	`
-	_, err := r.db.Exec(ctx, query, time.Now().UTC(), id)
+	_, err := r.db.Exec(ctx, nil, query, time.Now().UTC(), id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %v", err)
+	}
+	return nil
+}
+
+// StoreUserAlias stores a user alias in the database.
+func (r *Repository) StoreUserAlias(ctx context.Context, tx *sql.Tx, dto *CreateAliasDTO) error {
+	query := `
+		INSERT INTO aliases (id, uid, aka, status)
+		VALUES (?, ?, ?, ?)
+	`
+	_, err := r.db.Exec(ctx, tx, query,
+		dto.ID,
+		dto.UID,
+		dto.AliasName,
+		enum.StatusActive,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to store user alias: %v", err)
+	}
+	return nil
+}
+
+// StoreLogin stores a user login record in the database.
+func (r *Repository) StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLoginDTO) error {
+	query := `
+		INSERT INTO logins (id, uid, hash_pass, status)
+		VALUES (?, ?, ?, ?)
+	`
+	_, err := r.db.Exec(ctx, tx, query,
+		dto.ID,
+		dto.UID,
+		dto.HassPass,
+		enum.StatusActive,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to store user login: %v", err)
 	}
 	return nil
 }

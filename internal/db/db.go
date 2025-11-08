@@ -60,56 +60,68 @@ func (d *Database) GetDB() *sql.DB {
 	return d.db
 }
 
-func (d *Database) WithTransaction(function func() error) error {
+func (d *Database) WithTransaction(function func(tx *sql.Tx) error) error {
+	log.Println("Starting transaction")
 	tx, err := d.db.Begin()
 	if err != nil {
+		log.Printf("Failed to begin transaction: %v", err)
 		return fmt.Errorf("failed to begin transaction: %v", err)
 	}
 
-	if err := function(); err != nil {
+	if err := function(tx); err != nil {
+		log.Printf("Rolling back transaction due to error: %v", err)
 		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("Failed to rollback transaction: %v", rbErr)
 			return fmt.Errorf("failed to rollback transaction: %v (original error: %v)", rbErr, err)
 		}
+		log.Println("Transaction rolled back successfully")
 		return err
 	}
 
+	log.Println("Committing transaction")
 	if err := tx.Commit(); err != nil {
+		log.Printf("Failed to commit transaction: %v", err)
 		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
+	log.Println("Transaction committed successfully")
 	return nil
 }
 
-func (d *Database) Query(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+func (d *Database) Query(ctx context.Context, tx *sql.Tx, query string, args ...any) (*sql.Rows, error) {
 	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
 	defer cancel()
 
 	d.logInputSQL(colors.FGGreen, query, args...)
-	rows, err := d.db.Query(query, args...)
+	var rows *sql.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.QueryContext(ctx, query, args...)
+	} else {
+		rows, err = d.db.QueryContext(ctx, query, args...)
+	}
 	if err != nil {
 		d.logQueryError(err)
 	}
 	d.logQueryRowsResult(rows)
-
 	return rows, err
 }
 
-func (d *Database) QueryRow(ctx context.Context, query string, args ...any) *sql.Row {
+func (d *Database) QueryRow(ctx context.Context, tx *sql.Tx, query string, args ...any) *sql.Row {
 	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
 	defer cancel()
 
 	d.logInputSQL(colors.FGGreen, query, args...)
-	row := d.db.QueryRow(query, args...)
-	d.logQueryRowResult(row)
-
-	return row
+	if tx != nil {
+		return tx.QueryRowContext(ctx, query, args...)
+	}
+	return d.db.QueryRowContext(ctx, query, args...)
 }
 
-func (d *Database) Exec(ctx context.Context, query string, args ...any) (sql.Result, error) {
+func (d *Database) Exec(ctx context.Context, tx *sql.Tx, query string, args ...any) (sql.Result, error) {
 	_, cancel := context.WithTimeout(ctx, DatabaseTimeout)
 	defer cancel()
 
 	var color colors.Color
-
 	normalized := strings.TrimSpace(strings.ToUpper(query))
 	switch {
 	case strings.HasPrefix(normalized, "SELECT"):
@@ -125,14 +137,19 @@ func (d *Database) Exec(ctx context.Context, query string, args ...any) (sql.Res
 	}
 
 	d.logInputSQL(color, query, args...)
-	result, err := d.db.Exec(query, args...)
+	var result sql.Result
+	var err error
+	if tx != nil {
+		result, err = tx.ExecContext(ctx, query, args...)
+	} else {
+		result, err = d.db.ExecContext(ctx, query, args...)
+	}
 	if err != nil {
 		d.logQueryError(err)
 	}
 	if result != nil {
 		d.logExecResult(result)
 	}
-
 	return result, err
 }
 

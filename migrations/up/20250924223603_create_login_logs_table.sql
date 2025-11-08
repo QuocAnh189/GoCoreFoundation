@@ -1,6 +1,6 @@
 CREATE TABLE login_logs (
-  `id` int NOT NULL,
-  `uid` int NOT NULL,
+  `id` CHAR(36) NOT NULL,
+  `uid` CHAR(36) NOT NULL,
   `ip_address` varchar(255) NOT NULL,
   `device_uuid` varchar(255) NOT NULL,
   `token` varchar(512) NOT NULL,

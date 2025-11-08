@@ -1,6 +1,6 @@
 CREATE TABLE devices (
-  `id` int NOT NULL,
-  `uid` int DEFAULT NULL,
+  `id` CHAR(36) NOT NULL,
+  `uid` CHAR(36) DEFAULT NULL,
   `device_uuid` varchar(255) DEFAULT NULL,
   `device_name` varchar(255) DEFAULT NULL,
   `device_push_token` varchar(255) DEFAULT NULL,

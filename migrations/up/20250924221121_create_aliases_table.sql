@@ -1,8 +1,7 @@
 CREATE TABLE aliases (
-  `id` int NOT NULL,
-  `uid` int NOT NULL,
+  `id` CHAR(36) NOT NULL,
+  `uid` CHAR(36) NOT NULL,
   `aka` varchar(128) NOT NULL,
-  `note` varchar(500) DEFAULT NULL,
   `status` VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
   `create_id` INT DEFAULT 0,
   `create_dt` DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),

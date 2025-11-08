@@ -35,6 +35,6 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 	case status.SUCCESS:
 		return "Thành công"
 	default:
-		return "Unknown error"
+		return "Unknown"
 	}
 }

@@ -43,6 +43,10 @@ func WriteJson(w http.ResponseWriter, ctx context.Context, data any, err error, 
 		payload["status"] = status.INTERNAL
 	}
 
+	if payload["message"] == "Unknown" && err != nil {
+		payload["message"] = err.Error()
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(http.StatusOK)

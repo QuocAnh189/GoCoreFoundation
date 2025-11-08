@@ -5,6 +5,7 @@ import (
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
 )
 
 type Service struct {
@@ -54,10 +55,17 @@ func (s *Service) CreateUser(ctx context.Context, req *CreateUserRequest) (statu
 	}
 
 	dto := BuildCreateUserDTO(req)
-	result, err := s.repo.Create(ctx, dto)
+
+	dto.ID, err = uuid.GenerateUUIDV7()
 	if err != nil {
 		return status.INTERNAL, nil, err
 	}
+
+	result, err := s.repo.CreateUserWithAssociations(ctx, dto)
+	if err != nil {
+		return status.INTERNAL, nil, err
+	}
+
 	return status.SUCCESS, result, nil
 }
 
@@ -68,11 +76,16 @@ func (s *Service) UpdateUser(ctx context.Context, req *UpdateUserRequest) (statu
 	}
 
 	dto := BuildUpdateUserDTO(req)
-	result, err := s.repo.Update(ctx, dto)
-
+	_, err = s.repo.Update(ctx, dto)
 	if err != nil {
 		return status.INTERNAL, nil, err
 	}
+
+	result, err := s.repo.FindByID(ctx, dto.ID)
+	if err != nil {
+		return status.INTERNAL, nil, err
+	}
+
 	return status.SUCCESS, result, nil
 }
 

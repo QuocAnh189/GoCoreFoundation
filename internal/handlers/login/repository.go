@@ -7,7 +7,6 @@ type IRepository interface {
 }
 
 type Repository struct {
-	// Add repository fields here
 	db db.IDatabase
 }
 

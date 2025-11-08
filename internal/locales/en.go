@@ -35,6 +35,6 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 	case status.SUCCESS:
 		return "Success"
 	default:
-		return "Unknown error"
+		return "Unknown"
 	}
 }
