@@ -94,7 +94,7 @@ func (s *Service) DeleteUser(ctx context.Context, id string) (status.Code, error
 		return status.USER_INVALID_ID, ErrInvalidUserID
 	}
 
-	err := s.repo.Delete(ctx, id)
+	err := s.repo.DeleteUserWithAssociations(ctx, id)
 	if err != nil {
 		return status.INTERNAL, err
 	}

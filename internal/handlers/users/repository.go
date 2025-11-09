@@ -17,6 +17,7 @@ import (
 // IRepository defines the user repository interface.
 type IRepository interface {
 	CreateUserWithAssociations(ctx context.Context, dto *CreateUserDTO) (*User, error)
+	DeleteUserWithAssociations(ctx context.Context, uid string) error
 
 	// users
 	List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error)
@@ -28,9 +29,11 @@ type IRepository interface {
 
 	// aliases
 	StoreUserAlias(ctx context.Context, tx *sql.Tx, dto *CreateAliasDTO) error // Add tx parameter
+	DeleteUserAlias(ctx context.Context, uid string) error
 
 	// logins
 	StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLoginDTO) error // Add tx parameter
+	DeleteLogin(ctx context.Context, uid string) error
 }
 
 // UserRepository implements the IRepository interface.
@@ -124,6 +127,38 @@ func (r *Repository) CreateUserWithAssociations(ctx context.Context, dto *Create
 	}
 
 	return result, nil
+}
+
+// DeleteUserWithAssociations deletes a user and their associated records in a single transaction.
+func (r *Repository) DeleteUserWithAssociations(ctx context.Context, uid string) error {
+	handler := func(tx *sql.Tx) error {
+		// Delete users
+		err := r.Delete(ctx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to create user in transaction: %v", err)
+		}
+
+		// Delete user aliases
+		err = r.DeleteUserAlias(ctx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to delete user aliases in transaction: %v", err)
+		}
+
+		// Delete user logins
+		err = r.DeleteLogin(ctx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to delete user logins in transaction: %v", err)
+		}
+
+		return nil
+	}
+
+	err := r.db.WithTransaction(handler)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // List retrieves a paginated list of users with optional search and sorting.
@@ -327,13 +362,13 @@ func (r *Repository) Update(ctx context.Context, dto *UpdateUserDTO) (int64, err
 }
 
 // Delete removes a user by ID.
-func (r *Repository) Delete(ctx context.Context, id string) error {
+func (r *Repository) Delete(ctx context.Context, uid string) error {
 	query := `
 		UPDATE users
 		SET deleted_dt = ?
 		WHERE id = ?
 	`
-	_, err := r.db.Exec(ctx, nil, query, time.Now().UTC(), id)
+	_, err := r.db.Exec(ctx, nil, query, time.Now().UTC(), uid)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %v", err)
 	}
@@ -358,6 +393,20 @@ func (r *Repository) StoreUserAlias(ctx context.Context, tx *sql.Tx, dto *Create
 	return nil
 }
 
+// DeleteUserAlias deletes user aliases by user ID.
+func (r *Repository) DeleteUserAlias(ctx context.Context, uid string) error {
+	query := `
+		UPDATE aliases
+		SET deleted_dt = ?
+		WHERE uid = ? AND deleted_dt IS NULL
+	`
+	_, err := r.db.Exec(ctx, nil, query, time.Now().UTC(), uid)
+	if err != nil {
+		return fmt.Errorf("failed to delete user aliases: %v", err)
+	}
+	return nil
+}
+
 // StoreLogin stores a user login record in the database.
 func (r *Repository) StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLoginDTO) error {
 	query := `
@@ -372,6 +421,20 @@ func (r *Repository) StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLogi
 	)
 	if err != nil {
 		return fmt.Errorf("failed to store user login: %v", err)
+	}
+	return nil
+}
+
+// DeleteLogin deletes user logins by user ID.
+func (r *Repository) DeleteLogin(ctx context.Context, uid string) error {
+	query := `
+		UPDATE logins
+		SET deleted_dt = ?
+		WHERE uid = ? AND deleted_dt IS NULL
+	`
+	_, err := r.db.Exec(ctx, nil, query, time.Now().UTC(), uid)
+	if err != nil {
+		return fmt.Errorf("failed to delete user logins: %v", err)
 	}
 	return nil
 }
