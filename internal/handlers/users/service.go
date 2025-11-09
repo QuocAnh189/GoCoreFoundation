@@ -58,9 +58,9 @@ func (s *Service) GetUserByEmail(ctx context.Context, email string) (status.Code
 }
 
 func (s *Service) CreateUser(ctx context.Context, req *CreateUserRequest) (status.Code, *User, error) {
-	mStatus, err := ValidateCreateUserRequest(req)
+	statusCode, err := ValidateCreateUserRequest(req)
 	if err != nil {
-		return mStatus, nil, err
+		return statusCode, nil, err
 	}
 
 	for _, loginName := range []string{req.Email, req.Phone} {
@@ -94,9 +94,9 @@ func (s *Service) CreateUser(ctx context.Context, req *CreateUserRequest) (statu
 }
 
 func (s *Service) UpdateUser(ctx context.Context, req *UpdateUserRequest) (status.Code, *User, error) {
-	mStatus, err := ValidateUpdateUserRequest(req)
+	statusCode, err := ValidateUpdateUserRequest(req)
 	if err != nil {
-		return mStatus, nil, err
+		return statusCode, nil, err
 	}
 
 	dto := BuildUpdateUserDTO(req)

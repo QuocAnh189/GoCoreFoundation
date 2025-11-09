@@ -31,7 +31,11 @@ func BuildUpdateUserDTO(req *UpdateUserRequest) *UpdateUserDTO {
 	}
 }
 
-func MapSQLToUser(su *sqlUser) *User {
+func MapSchemaToUser(su *sqlUser) *User {
+	if su == nil {
+		return nil
+	}
+
 	return &User{
 		ID:         su.ID,
 		FirstName:  su.FirstName.String,

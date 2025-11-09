@@ -24,4 +24,9 @@ const (
 	USER_INVALID_PHONE        Code = 1009
 	USER_INVALID_ROLE         Code = 1019
 	USER_INVALID_STATUS       Code = 1010
+
+	// Device status
+	DEVICE_INVALID_PARAMS Code = 1101
+	DEVICE_MISSING_UUID   Code = 1102
+	DEVICE_MISSING_NAME   Code = 1103
 )

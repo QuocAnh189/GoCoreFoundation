@@ -110,6 +110,7 @@ func (a *App) setupMiddleware(rootSvr *root.Server, services *appservices.Servic
 		// Start-->
 		middleware.RootSessionMiddleware(services.SessionProvider, sessions.SessionContextKey),
 		middleware.LocaleMiddleware("en"),
+		middleware.DeviceMiddleware(services.SessionManager, *services.DeviceService),
 		middleware.LogRequestMiddleware,
 		// -->End
 	}

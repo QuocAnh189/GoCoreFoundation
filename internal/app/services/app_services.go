@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
@@ -27,6 +28,7 @@ type ServiceContainer struct {
 	HealthService *health.Service
 	LoginService  *login.Service
 	UserService   *users.Service
+	DeviceService *device.Service
 }
 
 const (
@@ -128,6 +130,10 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	userRepo := users.NewRepository(res.Db)
 	var userSvc = users.NewService(userRepo)
 
+	log.Println("> deviceSvc...")
+	deviceRepo := device.NewRepository(res.Db)
+	var deviceSvc = device.NewService(deviceRepo)
+
 	svcs := ServiceContainer{
 		SessionManager:  sessionManager,
 		JwtHelper:       jwtHelper,
@@ -136,6 +142,7 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 		UserService:   userSvc,
 		LoginService:  loginSvc,
 		HealthService: healthSvc,
+		DeviceService: deviceSvc,
 	}
 
 	return &svcs, nil

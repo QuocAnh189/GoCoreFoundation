@@ -1,8 +1,8 @@
 CREATE TABLE devices (
   `id` CHAR(36) NOT NULL,
   `uid` CHAR(36) DEFAULT NULL,
-  `device_uuid` varchar(255) DEFAULT NULL,
-  `device_name` varchar(255) DEFAULT NULL,
+  `device_uuid` varchar(255) NOT NULL,
+  `device_name` varchar(255) NOT NULL,
   `device_push_token` varchar(255) DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT '0',
   `status` VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',

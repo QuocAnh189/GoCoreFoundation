@@ -223,7 +223,7 @@ func (r *Repository) GetUserByLoginName(ctx context.Context, loginName string) (
 		return nil, fmt.Errorf("scan error: %v", err)
 	}
 
-	user := MapSQLToUser(&su)
+	user := MapSchemaToUser(&su)
 
 	return user, nil
 }
@@ -302,7 +302,7 @@ func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserR
 			return nil, fmt.Errorf("scan error: %v", err)
 		}
 
-		users = append(users, MapSQLToUser(&su))
+		users = append(users, MapSchemaToUser(&su))
 	}
 
 	return &ListUserResponse{
@@ -334,7 +334,7 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
 		return nil, fmt.Errorf("scan error: %v", err)
 	}
 
-	user := MapSQLToUser(&su)
+	user := MapSchemaToUser(&su)
 
 	return user, nil
 }
@@ -362,7 +362,7 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, erro
 		return nil, fmt.Errorf("scan error: %v", err)
 	}
 
-	user := MapSQLToUser(&su)
+	user := MapSchemaToUser(&su)
 
 	return user, nil
 }
