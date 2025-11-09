@@ -26,6 +26,15 @@ func (s *Service) ListUsers(ctx context.Context, req *ListUserRequest) (status.C
 	return status.SUCCESS, result.Users, result.Pagination, nil
 }
 
+func (s *Service) GetUserByLoginName(ctx context.Context, loginName string) (status.Code, *User, error) {
+	result, err := s.repo.GetUserByLoginName(ctx, loginName)
+	if err != nil {
+		return status.INTERNAL, nil, err
+	}
+
+	return status.SUCCESS, result, nil
+}
+
 func (s *Service) GetUserByID(ctx context.Context, id string) (status.Code, *User, error) {
 	result, err := s.repo.FindByID(ctx, id)
 	if err != nil {
@@ -52,6 +61,21 @@ func (s *Service) CreateUser(ctx context.Context, req *CreateUserRequest) (statu
 	mStatus, err := ValidateCreateUserRequest(req)
 	if err != nil {
 		return mStatus, nil, err
+	}
+
+	for _, loginName := range []string{req.Email, req.Phone} {
+		existingUser, err := s.repo.GetUserByLoginName(ctx, loginName)
+		if err != nil {
+			return status.INTERNAL, nil, err
+		}
+		if existingUser != nil {
+			switch loginName {
+			case req.Email:
+				return status.USER_EMAIL_ALREADY_EXISTS, nil, ErrEmailAlreadyExists
+			case req.Phone:
+				return status.USER_PHONE_ALREADY_EXISTS, nil, ErrPhoneAlreadyExists
+			}
+		}
 	}
 
 	dto := BuildCreateUserDTO(req)
@@ -95,6 +119,18 @@ func (s *Service) DeleteUser(ctx context.Context, id string) (status.Code, error
 	}
 
 	err := s.repo.DeleteUserWithAssociations(ctx, id)
+	if err != nil {
+		return status.INTERNAL, err
+	}
+	return status.SUCCESS, nil
+}
+
+func (s *Service) ForceDeleteUser(ctx context.Context, id string) (status.Code, error) {
+	if id == "" {
+		return status.USER_INVALID_ID, ErrInvalidUserID
+	}
+
+	err := s.repo.ForceDeleteUserWithAssociations(ctx, id)
 	if err != nil {
 		return status.INTERNAL, err
 	}

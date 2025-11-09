@@ -31,4 +31,5 @@ func SetUpHttpRoutes(server *root.Server, res *resource.AppResource, services *a
 	server.AddRoute("POST /users/create", u.HandleCreateUser)
 	server.AddRoute("POST /users/update", u.HandleUpdateUser)
 	server.AddRoute("POST /users/delete", u.HandleDeleteUser)
+	server.AddRoute("POST /users/force-delete", u.HandleForceDeleteUser)
 }

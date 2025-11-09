@@ -18,6 +18,9 @@ import (
 type IRepository interface {
 	CreateUserWithAssociations(ctx context.Context, dto *CreateUserDTO) (*User, error)
 	DeleteUserWithAssociations(ctx context.Context, uid string) error
+	ForceDeleteUserWithAssociations(ctx context.Context, uid string) error
+
+	GetUserByLoginName(ctx context.Context, loginName string) (*User, error)
 
 	// users
 	List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error)
@@ -26,14 +29,17 @@ type IRepository interface {
 	Create(ctx context.Context, tx *sql.Tx, dto *CreateUserDTO) (int64, error) // Add tx parameter
 	Update(ctx context.Context, dto *UpdateUserDTO) (int64, error)
 	Delete(ctx context.Context, id string) error
+	ForceDelete(ctx context.Context, tx *sql.Tx, id string) error
 
 	// aliases
 	StoreUserAlias(ctx context.Context, tx *sql.Tx, dto *CreateAliasDTO) error // Add tx parameter
 	DeleteUserAlias(ctx context.Context, uid string) error
+	ForceDeleteUserAlias(ctx context.Context, tx *sql.Tx, uid string) error
 
 	// logins
 	StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLoginDTO) error // Add tx parameter
 	DeleteLogin(ctx context.Context, uid string) error
+	ForceDeleteLogin(ctx context.Context, tx *sql.Tx, uid string) error
 }
 
 // UserRepository implements the IRepository interface.
@@ -161,6 +167,67 @@ func (r *Repository) DeleteUserWithAssociations(ctx context.Context, uid string)
 	return nil
 }
 
+// ForceDeleteUserWithAssociations permanently deletes a user and their associated records in a single transaction.
+func (r *Repository) ForceDeleteUserWithAssociations(ctx context.Context, uid string) error {
+	handler := func(tx *sql.Tx) error {
+		// Force delete users
+		err := r.ForceDelete(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user in transaction: %v", err)
+		}
+
+		// Force delete user aliases
+		err = r.ForceDeleteUserAlias(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user aliases in transaction: %v", err)
+		}
+
+		// Force delete user logins
+		err = r.ForceDeleteLogin(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user logins in transaction: %v", err)
+		}
+
+		return nil
+	}
+
+	err := r.db.WithTransaction(handler)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetUserByLoginName retrieves a user by their login name (email or phone).
+func (r *Repository) GetUserByLoginName(ctx context.Context, loginName string) (*User, error) {
+	query := `
+		SELECT u.id, u.first_name, u.middle_name, u.last_name, u.phone, u.email, 
+		u.role, u.status, u.create_id, u.create_dt, u.modify_id, u.modify_dt
+		FROM users u
+		JOIN aliases a ON u.id = a.uid
+		WHERE a.aka = ? AND u.deleted_dt IS NULL AND a.deleted_dt IS NULL
+	`
+	result := r.db.QueryRow(ctx, nil, query, loginName)
+
+	var su sqlUser
+	err := result.Scan(
+		&su.ID, &su.FirstName, &su.MiddleName, &su.LastName, &su.Phone, &su.Email,
+		&su.Role, &su.Status, &su.CreateID, &su.CreateDT,
+		&su.ModifyID, &su.ModifyDT,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("scan error: %v", err)
+	}
+
+	user := MapSQLToUser(&su)
+
+	return user, nil
+}
+
 // List retrieves a paginated list of users with optional search and sorting.
 func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserResponse, error) {
 	var queryBuilder strings.Builder
@@ -184,6 +251,8 @@ func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserR
 	countQuery := "SELECT COUNT(*) FROM users"
 	if req.Search != "" {
 		countQuery += ` WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? AND deleted_dt IS NULL`
+	} else {
+		countQuery += ` WHERE deleted_dt IS NULL`
 	}
 	var total int64
 	countRow := r.db.QueryRow(ctx, nil, countQuery, args...)
@@ -375,6 +444,19 @@ func (r *Repository) Delete(ctx context.Context, uid string) error {
 	return nil
 }
 
+// ForceDelete removes a user by ID permanently.
+func (r *Repository) ForceDelete(ctx context.Context, tx *sql.Tx, uid string) error {
+	query := `
+		DELETE FROM users
+		WHERE id = ?
+	`
+	_, err := r.db.Exec(ctx, tx, query, uid)
+	if err != nil {
+		return fmt.Errorf("failed to force delete user: %v", err)
+	}
+	return nil
+}
+
 // StoreUserAlias stores a user alias in the database.
 func (r *Repository) StoreUserAlias(ctx context.Context, tx *sql.Tx, dto *CreateAliasDTO) error {
 	query := `
@@ -407,6 +489,19 @@ func (r *Repository) DeleteUserAlias(ctx context.Context, uid string) error {
 	return nil
 }
 
+// ForceDeleteUserAlias permanently deletes user aliases by user ID.
+func (r *Repository) ForceDeleteUserAlias(ctx context.Context, tx *sql.Tx, uid string) error {
+	query := `
+		DELETE FROM aliases
+		WHERE uid = ?
+	`
+	_, err := r.db.Exec(ctx, tx, query, uid)
+	if err != nil {
+		return fmt.Errorf("failed to force delete user aliases: %v", err)
+	}
+	return nil
+}
+
 // StoreLogin stores a user login record in the database.
 func (r *Repository) StoreLogin(ctx context.Context, tx *sql.Tx, dto *CreateLoginDTO) error {
 	query := `
@@ -435,6 +530,19 @@ func (r *Repository) DeleteLogin(ctx context.Context, uid string) error {
 	_, err := r.db.Exec(ctx, nil, query, time.Now().UTC(), uid)
 	if err != nil {
 		return fmt.Errorf("failed to delete user logins: %v", err)
+	}
+	return nil
+}
+
+// ForceDeleteLogin permanently deletes user logins by user ID.
+func (r *Repository) ForceDeleteLogin(ctx context.Context, tx *sql.Tx, uid string) error {
+	query := `
+		DELETE FROM logins
+		WHERE uid = ?
+	`
+	_, err := r.db.Exec(ctx, tx, query, uid)
+	if err != nil {
+		return fmt.Errorf("failed to force delete user logins: %v", err)
 	}
 	return nil
 }

@@ -26,6 +26,10 @@ func ValidateCreateUserRequest(req *CreateUserRequest) (status.Code, error) {
 		return status.USER_INVALID_EMAIL, ErrInvalidEmail
 	}
 
+	if !validate.ValidatePhoneNumber(req.Phone) {
+		return status.USER_INVALID_PHONE, ErrInvalidPhone
+	}
+
 	if req.Role != "" && !validate.IsValidRole(req.Role) {
 		return status.USER_INVALID_ROLE, ErrInvalidRole
 	}

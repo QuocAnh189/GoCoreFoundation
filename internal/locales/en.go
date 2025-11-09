@@ -26,8 +26,14 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return "Email is required"
 	case status.USER_INVALID_EMAIL:
 		return "Invalid email format"
+	case status.USER_EMAIL_ALREADY_EXISTS:
+		return "Email already exists"
 	case status.USER_MISSING_PHONE:
 		return "Phone is required"
+	case status.USER_INVALID_PHONE:
+		return "Invalid phone format"
+	case status.USER_PHONE_ALREADY_EXISTS:
+		return "Phone already exists"
 	case status.USER_INVALID_ROLE:
 		return fmt.Sprintf("Invalid role. Valid roles are: %v", args)
 	case status.USER_INVALID_STATUS:

@@ -134,3 +134,20 @@ func (u *Controller) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	response.WriteJson(w, r.Context(), "Delete successfully", nil, statusCode)
 }
+
+// POST - /users/force-delete
+func (u *Controller) HandleForceDeleteUser(w http.ResponseWriter, r *http.Request) {
+	var req DeleteUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteJson(w, r.Context(), nil, fmt.Errorf("invalid parameters"), status.BAD_REQUEST)
+		return
+	}
+
+	statusCode, err := u.service.ForceDeleteUser(r.Context(), req.UserID)
+	if err != nil {
+		response.WriteJson(w, r.Context(), nil, err, statusCode)
+		return
+	}
+
+	response.WriteJson(w, r.Context(), "Force delete successfully", nil, statusCode)
+}

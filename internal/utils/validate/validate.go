@@ -12,6 +12,15 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
+func ValidatePhoneNumber(phone string) bool {
+	r, e := regexp.Compile(`^\+?[\d\s()-]{7,20}$`)
+	if e != nil {
+		return false
+	}
+
+	return r.MatchString(phone)
+}
+
 func IsValidRole(role enum.ERole) bool {
 	validRoles := []enum.ERole{enum.RoleAdmin, enum.RoleUser, enum.RoleGuest}
 	for _, validRole := range validRoles {
