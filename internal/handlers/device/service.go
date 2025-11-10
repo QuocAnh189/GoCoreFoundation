@@ -42,7 +42,7 @@ func (s *Service) CreateDevice(ctx context.Context, req *CreateDeviceReq) (statu
 		return status.INTERNAL, err
 	}
 
-	err = s.repo.StoreDevice(ctx, dto)
+	err = s.repo.StoreDevice(ctx, nil, dto)
 	if err != nil {
 		return status.INTERNAL, err
 	}

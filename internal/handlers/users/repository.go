@@ -9,15 +9,13 @@ import (
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/utils"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
 )
 
 // IRepository defines the user repository interface.
 type IRepository interface {
-	CreateUserWithAssociations(ctx context.Context, dto *CreateUserDTO) (*User, error)
-	DeleteUserWithAssociations(ctx context.Context, uid string) error
+	CreateUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx, uid string) (*User, error)
+	DeleteUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx) error
 	ForceDeleteUserWithAssociations(ctx context.Context, uid string) error
 
 	GetUserByLoginName(ctx context.Context, loginName string) (*User, error)
@@ -70,64 +68,14 @@ type sqlUser struct {
 }
 
 // CreateWithAliases creates a user and their aliases in a single transaction.
-func (r *Repository) CreateUserWithAssociations(ctx context.Context, dto *CreateUserDTO) (*User, error) {
-	handler := func(tx *sql.Tx) error {
-		// Create the user
-		_, err := r.Create(ctx, tx, dto)
-		if err != nil {
-			return fmt.Errorf("failed to create user in transaction: %v", err)
-		}
-
-		// Store aliases
-		for _, aka := range []string{dto.Email, dto.Phone} {
-			if aka == "" {
-				continue // Skip empty aliases
-			}
-			uuid, err := uuid.GenerateUUIDV7()
-			if err != nil {
-				return fmt.Errorf("failed to generate UUID for alias: %v", err)
-			}
-
-			aliasDTO := &CreateAliasDTO{
-				ID:        uuid,
-				UID:       dto.ID,
-				AliasName: aka,
-			}
-			if err := r.StoreUserAlias(ctx, tx, aliasDTO); err != nil {
-				return fmt.Errorf("failed to store user alias in transaction: %v", err)
-			}
-		}
-
-		hashedPassword, err := utils.DefaultHasher.Hash(dto.Password)
-		if err != nil {
-			return fmt.Errorf("hashing password error: %v", err)
-		}
-
-		// Store login
-		loginUUID, err := uuid.GenerateUUIDV7()
-		if err != nil {
-			return fmt.Errorf("failed to generate UUID for login: %v", err)
-		}
-
-		loginDTO := &CreateLoginDTO{
-			ID:       loginUUID,
-			UID:      dto.ID,
-			HassPass: hashedPassword,
-		}
-		if err := r.StoreLogin(ctx, tx, loginDTO); err != nil {
-			return fmt.Errorf("failed to store user login in transaction: %v", err)
-		}
-
-		return nil
-	}
-
+func (r *Repository) CreateUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx, uid string) (*User, error) {
 	err := r.db.WithTransaction(handler)
 
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := r.FindByID(ctx, dto.ID)
+	result, err := r.FindByID(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -136,29 +84,7 @@ func (r *Repository) CreateUserWithAssociations(ctx context.Context, dto *Create
 }
 
 // DeleteUserWithAssociations deletes a user and their associated records in a single transaction.
-func (r *Repository) DeleteUserWithAssociations(ctx context.Context, uid string) error {
-	handler := func(tx *sql.Tx) error {
-		// Delete users
-		err := r.Delete(ctx, uid)
-		if err != nil {
-			return fmt.Errorf("failed to create user in transaction: %v", err)
-		}
-
-		// Delete user aliases
-		err = r.DeleteUserAlias(ctx, uid)
-		if err != nil {
-			return fmt.Errorf("failed to delete user aliases in transaction: %v", err)
-		}
-
-		// Delete user logins
-		err = r.DeleteLogin(ctx, uid)
-		if err != nil {
-			return fmt.Errorf("failed to delete user logins in transaction: %v", err)
-		}
-
-		return nil
-	}
-
+func (r *Repository) DeleteUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx) error {
 	err := r.db.WithTransaction(handler)
 	if err != nil {
 		return err

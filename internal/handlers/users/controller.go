@@ -84,6 +84,9 @@ func (u *Controller) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.DeviceUUID = r.Header.Get("Device-UUID")
+	req.DeviceName = r.Header.Get("Device-Name")
+
 	statusCode, user, err := u.service.CreateUser(r.Context(), &req)
 	if err != nil {
 		response.WriteJson(w, r.Context(), nil, err, statusCode, GetArgsByStatatus(statusCode)...)

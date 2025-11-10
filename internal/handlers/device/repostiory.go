@@ -3,6 +3,8 @@ package device
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/db"
@@ -10,8 +12,9 @@ import (
 
 type IRepository interface {
 	GetDeviceByDeviceUUID(ctx context.Context, deviceUUID string) (*Device, error)
-	StoreDevice(ctx context.Context, dto *CreateDeviceDTO) error
+	StoreDevice(ctx context.Context, tx *sql.Tx, dto *CreateDeviceDTO) error
 	UpdateDevice(ctx context.Context, dto *UpdateDeviceDTO) error
+	DeleteDeviceByUID(ctx context.Context, tx *sql.Tx, uid string) error
 }
 
 type Repository struct {
@@ -61,13 +64,13 @@ func (r *Repository) GetDeviceByDeviceUUID(ctx context.Context, deviceUUID strin
 	return device, nil
 }
 
-func (r *Repository) StoreDevice(ctx context.Context, dto *CreateDeviceDTO) error {
+func (r *Repository) StoreDevice(ctx context.Context, tx *sql.Tx, dto *CreateDeviceDTO) error {
 	query := `
 		INSERT INTO devices (id, uid, device_uuid, device_name, device_push_token, is_verified, status)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
 
-	_, err := r.db.Exec(ctx, nil, query,
+	_, err := r.db.Exec(ctx, tx, query,
 		dto.ID,
 		dto.UID,
 		dto.DeviceUUID,
@@ -102,4 +105,17 @@ func (r *Repository) UpdateDevice(ctx context.Context, dto *UpdateDeviceDTO) err
 	)
 
 	return err
+}
+
+func (r *Repository) DeleteDeviceByUID(ctx context.Context, tx *sql.Tx, uid string) error {
+	query := `
+		UPDATE devices
+		SET deleted_dt = ?
+		WHERE uid = ? AND deleted_dt IS NULL
+	`
+	_, err := r.db.Exec(ctx, tx, query, time.Now().UTC(), uid)
+	if err != nil {
+		return fmt.Errorf("failed to delete user logins: %v", err)
+	}
+	return nil
 }

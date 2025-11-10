@@ -126,23 +126,23 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	loginRepo := login.NewRepository(res.Db)
 	var loginSvc = login.NewService(loginRepo)
 
-	log.Println("> userSvc...")
-	userRepo := users.NewRepository(res.Db)
-	var userSvc = users.NewService(userRepo)
-
 	log.Println("> deviceSvc...")
 	deviceRepo := device.NewRepository(res.Db)
 	var deviceSvc = device.NewService(deviceRepo)
+
+	log.Println("> userSvc...")
+	userRepo := users.NewRepository(res.Db)
+	var userSvc = users.NewService(userRepo, deviceRepo)
 
 	svcs := ServiceContainer{
 		SessionManager:  sessionManager,
 		JwtHelper:       jwtHelper,
 		SessionProvider: sessionProvider,
 
-		UserService:   userSvc,
 		LoginService:  loginSvc,
 		HealthService: healthSvc,
 		DeviceService: deviceSvc,
+		UserService:   userSvc,
 	}
 
 	return &svcs, nil

@@ -1,7 +1,12 @@
 package device
 
+import "github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
+
 func BuildCreateDeviceDTO(req *CreateDeviceReq) *CreateDeviceDTO {
+	uuid, _ := uuid.GenerateUUIDV7()
+
 	return &CreateDeviceDTO{
+		ID:              uuid,
 		UID:             req.UID,
 		DeviceUUID:      req.DeviceUUID,
 		DeviceName:      req.DeviceName,

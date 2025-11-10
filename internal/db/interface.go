@@ -15,3 +15,5 @@ type IDatabase interface {
 	PingContext(ctx context.Context) error
 	Close() error
 }
+
+type HanderlerWithTx func(tx *sql.Tx) error

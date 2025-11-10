@@ -2,19 +2,24 @@ package users
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/uuid"
 )
 
 type Service struct {
-	repo IRepository
+	repo       IRepository
+	deviceRepo device.IRepository
 }
 
-func NewService(repo IRepository) *Service {
+func NewService(repo IRepository, deviceRepo device.IRepository) *Service {
 	return &Service{
-		repo: repo,
+		repo:       repo,
+		deviceRepo: deviceRepo,
 	}
 }
 
@@ -78,14 +83,51 @@ func (s *Service) CreateUser(ctx context.Context, req *CreateUserRequest) (statu
 		}
 	}
 
-	dto := BuildCreateUserDTO(req)
+	createUserDTO := BuildCreateUserDTO(req)
+	handler := func(tx *sql.Tx) error {
+		// Create the user
+		_, err := s.repo.Create(ctx, tx, createUserDTO)
+		if err != nil {
+			return fmt.Errorf("failed to create user in transaction: %v", err)
+		}
 
-	dto.ID, err = uuid.GenerateUUIDV7()
-	if err != nil {
-		return status.INTERNAL, nil, err
+		// Store aliases
+		for _, aka := range []string{createUserDTO.Email, createUserDTO.Phone} {
+			if aka == "" {
+				continue // Skip empty aliases
+			}
+
+			createAliasDTO := BuildAliasDTO(createUserDTO.ID, createUserDTO.Email)
+			if err := s.repo.StoreUserAlias(ctx, tx, createAliasDTO); err != nil {
+				return fmt.Errorf("failed to store user alias in transaction: %v", err)
+			}
+		}
+
+		// Store login
+		hashedPassword, err := utils.DefaultHasher.Hash(createUserDTO.Password)
+		if err != nil {
+			return fmt.Errorf("failed to hash password: %v", err)
+		}
+		createLoginDTO := BuildLoginDTO(createUserDTO.ID, hashedPassword)
+		if err := s.repo.StoreLogin(ctx, tx, createLoginDTO); err != nil {
+			return fmt.Errorf("failed to store user login in transaction: %v", err)
+		}
+
+		// Store device
+		createDeviceDto := device.BuildCreateDeviceDTO(&device.CreateDeviceReq{
+			UID:        &createUserDTO.ID,
+			DeviceUUID: req.DeviceUUID,
+			DeviceName: req.DeviceName,
+		})
+		err = s.deviceRepo.StoreDevice(ctx, tx, createDeviceDto)
+		if err != nil {
+			return fmt.Errorf("failed to store device info in transaction: %v", err)
+		}
+
+		return nil
 	}
 
-	result, err := s.repo.CreateUserWithAssociations(ctx, dto)
+	result, err := s.repo.CreateUserWithAssociations(ctx, handler, createUserDTO.ID)
 	if err != nil {
 		return status.INTERNAL, nil, err
 	}
@@ -113,12 +155,40 @@ func (s *Service) UpdateUser(ctx context.Context, req *UpdateUserRequest) (statu
 	return status.SUCCESS, result, nil
 }
 
-func (s *Service) DeleteUser(ctx context.Context, id string) (status.Code, error) {
-	if id == "" {
+func (s *Service) DeleteUser(ctx context.Context, uid string) (status.Code, error) {
+	if uid == "" {
 		return status.USER_INVALID_ID, ErrInvalidUserID
 	}
 
-	err := s.repo.DeleteUserWithAssociations(ctx, id)
+	handler := func(tx *sql.Tx) error {
+		// Delete users
+		err := s.repo.Delete(ctx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to create user in transaction: %v", err)
+		}
+
+		// Delete user aliases
+		err = s.repo.DeleteUserAlias(ctx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to delete user aliases in transaction: %v", err)
+		}
+
+		// Delete user logins
+		err = s.repo.DeleteLogin(ctx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to delete user logins in transaction: %v", err)
+		}
+
+		// Delete user devices
+		err = s.deviceRepo.DeleteDeviceByUID(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to delete user devices in transaction: %v", err)
+		}
+
+		return nil
+	}
+
+	err := s.repo.DeleteUserWithAssociations(ctx, handler)
 	if err != nil {
 		return status.INTERNAL, err
 	}
