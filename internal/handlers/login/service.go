@@ -86,13 +86,26 @@ func (s *Service) Login(ctx context.Context, sess *sessions.AppSession, req *Log
 		LoginName: req.LoginName,
 	})
 
-	// Store login log
-	loginLogDTO := BuildCreateLoginLogDTO(user.ID, req.IpAddress, req.DeviceUUID, authToken, loginStatus)
-
-	err = s.repo.StoreLoginLog(ctx, loginLogDTO)
+	loginLog, err := s.repo.GetLoginLogByUIDAndDeviceUUID(ctx, user.ID, req.DeviceUUID)
 	if err != nil {
-		logger.Info("Error storing login log: %v", err)
+		logger.Info("Error getting login log: %v", err)
 		return status.INTERNAL, nil, err
+	}
+
+	if loginLog != nil {
+		updateLoginLogDTO := BuildUpdateLoginLogDTO(loginLog.ID, user.ID, req.IpAddress, req.DeviceUUID, authToken, loginStatus)
+		err = s.repo.UpdateLoginLog(ctx, updateLoginLogDTO)
+		if err != nil {
+			logger.Info("Error updating login log: %v", err)
+			return status.INTERNAL, nil, err
+		}
+	} else {
+		createLoginLogDTO := BuildCreateLoginLogDTO(user.ID, req.IpAddress, req.DeviceUUID, authToken, loginStatus)
+		err = s.repo.StoreLoginLog(ctx, createLoginLogDTO)
+		if err != nil {
+			logger.Info("Error storing login log: %v", err)
+			return status.INTERNAL, nil, err
+		}
 	}
 
 	res := &LoginRes{
