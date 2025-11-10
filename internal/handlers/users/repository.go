@@ -16,7 +16,7 @@ import (
 type IRepository interface {
 	CreateUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx, uid string) (*User, error)
 	DeleteUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx) error
-	ForceDeleteUserWithAssociations(ctx context.Context, uid string) error
+	ForceDeleteUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx) error
 
 	GetUserByLoginName(ctx context.Context, loginName string) (*User, error)
 
@@ -53,18 +53,19 @@ func NewRepository(db db.IDatabase) *Repository {
 }
 
 type sqlUser struct {
-	ID         string
-	FirstName  sql.NullString
-	MiddleName sql.NullString
-	LastName   sql.NullString
-	Phone      sql.NullString
-	Email      sql.NullString
-	Role       sql.NullString
-	Status     sql.NullString
-	CreateID   sql.NullInt64
-	CreateDT   sql.NullTime
-	ModifyID   sql.NullInt64
-	ModifyDT   sql.NullTime
+	ID           string
+	FirstName    sql.NullString
+	MiddleName   sql.NullString
+	LastName     sql.NullString
+	Phone        sql.NullString
+	Email        sql.NullString
+	Role         sql.NullString
+	Status       sql.NullString
+	HashPassword string
+	CreateID     sql.NullInt64
+	CreateDT     sql.NullTime
+	ModifyID     sql.NullInt64
+	ModifyDT     sql.NullTime
 }
 
 // CreateWithAliases creates a user and their aliases in a single transaction.
@@ -94,29 +95,7 @@ func (r *Repository) DeleteUserWithAssociations(ctx context.Context, handler db.
 }
 
 // ForceDeleteUserWithAssociations permanently deletes a user and their associated records in a single transaction.
-func (r *Repository) ForceDeleteUserWithAssociations(ctx context.Context, uid string) error {
-	handler := func(tx *sql.Tx) error {
-		// Force delete users
-		err := r.ForceDelete(ctx, tx, uid)
-		if err != nil {
-			return fmt.Errorf("failed to force delete user in transaction: %v", err)
-		}
-
-		// Force delete user aliases
-		err = r.ForceDeleteUserAlias(ctx, tx, uid)
-		if err != nil {
-			return fmt.Errorf("failed to force delete user aliases in transaction: %v", err)
-		}
-
-		// Force delete user logins
-		err = r.ForceDeleteLogin(ctx, tx, uid)
-		if err != nil {
-			return fmt.Errorf("failed to force delete user logins in transaction: %v", err)
-		}
-
-		return nil
-	}
-
+func (r *Repository) ForceDeleteUserWithAssociations(ctx context.Context, handler db.HanderlerWithTx) error {
 	err := r.db.WithTransaction(handler)
 	if err != nil {
 		return err
@@ -129,17 +108,18 @@ func (r *Repository) ForceDeleteUserWithAssociations(ctx context.Context, uid st
 func (r *Repository) GetUserByLoginName(ctx context.Context, loginName string) (*User, error) {
 	query := `
 		SELECT u.id, u.first_name, u.middle_name, u.last_name, u.phone, u.email, 
-		u.role, u.status, u.create_id, u.create_dt, u.modify_id, u.modify_dt
+		u.role, u.status, l.hash_pass, u.create_id, u.create_dt, u.modify_id, u.modify_dt
 		FROM users u
 		JOIN aliases a ON u.id = a.uid
-		WHERE a.aka = ? AND u.deleted_dt IS NULL AND a.deleted_dt IS NULL
+		JOIN logins l ON u.id = l.uid
+		WHERE a.aka = ? AND u.deleted_dt IS NULL AND a.deleted_dt IS NULL AND l.deleted_dt IS NULL
 	`
 	result := r.db.QueryRow(ctx, nil, query, loginName)
 
 	var su sqlUser
 	err := result.Scan(
 		&su.ID, &su.FirstName, &su.MiddleName, &su.LastName, &su.Phone, &su.Email,
-		&su.Role, &su.Status, &su.CreateID, &su.CreateDT,
+		&su.Role, &su.Status, &su.HashPassword, &su.CreateID, &su.CreateDT,
 		&su.ModifyID, &su.ModifyDT,
 	)
 	if err != nil {

@@ -38,6 +38,16 @@ func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Rôle invalide. Valid rôle are: %v", args)
 	case status.USER_INVALID_STATUS:
 		return fmt.Sprintf("Statut invalide. Valid statuts are: %v", args)
+	case status.DEVICE_INVALID_PARAMS:
+		return "Paramètres de l'appareil invalides"
+	case status.DEVICE_MISSING_UUID:
+		return "L'UUID de l'appareil est requis"
+	case status.DEVICE_MISSING_NAME:
+		return "Le nom de l'appareil est requis"
+	case status.LOGIN_MISSING_PARAMETERS:
+		return "Paramètres requis manquants"
+	case status.LOGIN_WRONG_CREDENTIALS:
+		return "Identifiants de connexion incorrects"
 	case status.SUCCESS:
 		return "Succès"
 	default:

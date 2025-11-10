@@ -195,12 +195,40 @@ func (s *Service) DeleteUser(ctx context.Context, uid string) (status.Code, erro
 	return status.SUCCESS, nil
 }
 
-func (s *Service) ForceDeleteUser(ctx context.Context, id string) (status.Code, error) {
-	if id == "" {
+func (s *Service) ForceDeleteUser(ctx context.Context, uid string) (status.Code, error) {
+	if uid == "" {
 		return status.USER_INVALID_ID, ErrInvalidUserID
 	}
 
-	err := s.repo.ForceDeleteUserWithAssociations(ctx, id)
+	handler := func(tx *sql.Tx) error {
+		// Force delete users
+		err := s.repo.ForceDelete(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user in transaction: %v", err)
+		}
+
+		// Force delete user aliases
+		err = s.repo.ForceDeleteUserAlias(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user aliases in transaction: %v", err)
+		}
+
+		// Force delete user logins
+		err = s.repo.ForceDeleteLogin(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user logins in transaction: %v", err)
+		}
+
+		// Delete user devices
+		err = s.deviceRepo.ForceDeleteDeviceByUID(ctx, tx, uid)
+		if err != nil {
+			return fmt.Errorf("failed to force delete user devices in transaction: %v", err)
+		}
+
+		return nil
+	}
+
+	err := s.repo.ForceDeleteUserWithAssociations(ctx, handler)
 	if err != nil {
 		return status.INTERNAL, err
 	}

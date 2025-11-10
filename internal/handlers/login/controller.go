@@ -34,6 +34,8 @@ func (c *Controller) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+	req.DeviceUUID = r.Header.Get("Device-UUID")
+	req.DeviceName = r.Header.Get("Device-Name")
 
 	ctx := r.Context()
 
@@ -44,15 +46,11 @@ func (c *Controller) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Perform login
-	statusCode, authToken, err := c.service.Login(ctx, sess, &req)
+	statusCode, res, err := c.service.Login(ctx, sess, &req)
 	if err != nil {
 		response.WriteJson(w, ctx, nil, err, statusCode)
 		return
 	}
 
-	// Return response
-	res := &LoginRes{
-		AuthToken: authToken,
-	}
 	response.WriteJson(w, ctx, res, nil, statusCode)
 }

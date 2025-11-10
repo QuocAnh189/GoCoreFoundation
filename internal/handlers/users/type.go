@@ -15,6 +15,7 @@ type User struct {
 	Phone      string     `json:"phone"`
 	Email      string     `json:"email"`
 	Role       enum.ERole `json:"role"`
+	Password   string     `json:"-"`
 	Status     string     `json:"status"`
 	CreateID   *int64     `json:"create_id"`
 	CreateDT   time.Time  `json:"create_dt"`

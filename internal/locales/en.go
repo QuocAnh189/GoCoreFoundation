@@ -38,6 +38,16 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Invalid role. Valid roles are: %v", args)
 	case status.USER_INVALID_STATUS:
 		return fmt.Sprintf("Invalid status. Valid statuses are: %v", args)
+	case status.DEVICE_INVALID_PARAMS:
+		return "Invalid device parameters"
+	case status.DEVICE_MISSING_UUID:
+		return "Device UUID is required"
+	case status.DEVICE_MISSING_NAME:
+		return "Device name is required"
+	case status.LOGIN_MISSING_PARAMETERS:
+		return "Missing required parameters"
+	case status.LOGIN_WRONG_CREDENTIALS:
+		return "Wrong login credentials"
 	case status.SUCCESS:
 		return "Success"
 	default:

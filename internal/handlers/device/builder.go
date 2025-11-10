@@ -36,7 +36,7 @@ func MapSchemaToDevice(sd *sqlDevice) *Device {
 		UID:             sd.UID.String,
 		DeviceUuid:      sd.DeviceUuid,
 		DeviceName:      sd.DeviceName,
-		DevicePushToken: sd.DevicePushToken,
+		DevicePushToken: sd.DevicePushToken.String,
 		IsVerified:      sd.IsVerified,
 	}
 }

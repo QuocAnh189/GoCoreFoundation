@@ -50,6 +50,7 @@ func MapSchemaToUser(su *sqlUser) *User {
 		Email:      su.Email.String,
 		Phone:      su.Phone.String,
 		Status:     su.Status.String,
+		Password:   su.HashPassword,
 		Role:       enum.ERole(su.Role.String),
 		CreateID:   &su.CreateID.Int64,
 		CreateDT:   su.CreateDT.Time,

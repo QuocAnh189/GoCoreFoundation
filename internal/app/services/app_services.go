@@ -122,10 +122,6 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	log.Println("> healthSvc...")
 	var healthSvc = health.NewService(smsSvc, mailSvc)
 
-	log.Println("> loginSvc...")
-	loginRepo := login.NewRepository(res.Db)
-	var loginSvc = login.NewService(loginRepo)
-
 	log.Println("> deviceSvc...")
 	deviceRepo := device.NewRepository(res.Db)
 	var deviceSvc = device.NewService(deviceRepo)
@@ -133,6 +129,10 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	log.Println("> userSvc...")
 	userRepo := users.NewRepository(res.Db)
 	var userSvc = users.NewService(userRepo, deviceRepo)
+
+	log.Println("> loginSvc...")
+	loginRepo := login.NewRepository(res.Db)
+	var loginSvc = login.NewService(loginRepo, userRepo, deviceRepo)
 
 	svcs := ServiceContainer{
 		SessionManager:  sessionManager,

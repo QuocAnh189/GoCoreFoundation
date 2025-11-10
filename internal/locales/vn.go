@@ -38,6 +38,16 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Vai trò không hợp lệ. Các vai trò hợp lệ là: %v", args)
 	case status.USER_INVALID_STATUS:
 		return fmt.Sprintf("Trạng thái không hợp lệ. Các trạng thái hợp lệ là: %v", args)
+	case status.DEVICE_INVALID_PARAMS:
+		return "Tham số thiết bị không hợp lệ"
+	case status.DEVICE_MISSING_UUID:
+		return "Thiếu UUID thiết bị"
+	case status.DEVICE_MISSING_NAME:
+		return "Thiếu tên thiết bị"
+	case status.LOGIN_MISSING_PARAMETERS:
+		return "Thiếu tham số bắt buộc"
+	case status.LOGIN_WRONG_CREDENTIALS:
+		return "Thông tin đăng nhập sai"
 	case status.SUCCESS:
 		return "Thành công"
 	default:
