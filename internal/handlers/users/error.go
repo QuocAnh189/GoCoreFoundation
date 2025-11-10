@@ -12,6 +12,7 @@ var (
 	ErrMissingFirstName   = errors.New("first name is required")
 	ErrMissingLastName    = errors.New("last name is required")
 	ErrMissingPhone       = errors.New("phone is required")
+	ErrMissingPassword    = errors.New("password is required")
 	ErrInvalidPhone       = errors.New("invalid phone format")
 	ErrPhoneAlreadyExists = errors.New("phone already exists")
 	ErrMissingEmail       = errors.New("email is required")

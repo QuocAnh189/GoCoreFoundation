@@ -24,6 +24,8 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return "Last name is required"
 	case status.USER_MISSING_EMAIL:
 		return "Email is required"
+	case status.USER_MISSING_PASSWORD:
+		return "Password is required"
 	case status.USER_INVALID_EMAIL:
 		return "Invalid email format"
 	case status.USER_EMAIL_ALREADY_EXISTS:

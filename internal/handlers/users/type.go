@@ -49,6 +49,7 @@ type CreateUserRequest struct {
 	Phone      string     `json:"phone"`
 	Email      string     `json:"email"`
 	Role       enum.ERole `json:"role,omitempty"`
+	Password   string     `json:"password"`
 
 	DeviceUUID string `json:"device_uuid,omitempty"`
 	DeviceName string `json:"device_name,omitempty"`

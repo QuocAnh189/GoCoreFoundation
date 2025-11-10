@@ -2,12 +2,14 @@ package login
 
 import (
 	"context"
-	"log"
+	"errors"
 
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/utils"
 	appctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
 )
 
@@ -29,8 +31,9 @@ func (s *Service) Login(ctx context.Context, sess *sessions.AppSession, req *Log
 	logger := appctx.GetLogger(ctx)
 
 	var (
-		isSecure bool
-		needs2FA bool
+		isSecure    bool              = true
+		needs2FA    bool              = false
+		loginStatus enum.ELoginStatus = enum.LoginStatusActive
 	)
 
 	statusCode, err := ValidateLoginReq(req)
@@ -48,59 +51,55 @@ func (s *Service) Login(ctx context.Context, sess *sessions.AppSession, req *Log
 		return status.LOGIN_WRONG_CREDENTIALS, nil, ErrInvalidCredentials
 	}
 
-	// check password
-	// originalPassword := "test"
-	// newHash, err := utils.DefaultHasher.Hash(originalPassword)
-	// if err != nil {
-	// 	logger.Error("Failed to generate hash: %v", err)
-	// 	return status.LOGIN_WRONG_CREDENTIALS, nil, ErrInvalidCredentials
-	// }
-	// err = utils.DefaultHasher.Compare(originalPassword, newHash)
-	// if err != nil {
-	// 	logger.Info("Comparison with stored hash failed: %v", err)
-	// }
-
-	println("raw", req.RawPassword)
-	println("hash", user.Password)
-	// err = utils.DefaultHasher.Compare(req.RawPassword, user.Password)
-	// if err != nil {
-	// 	logger.Info("Error comparing password: %v", err)
-	// 	return status.LOGIN_WRONG_CREDENTIALS, nil, ErrInvalidCredentials
-	// }
-
-	// // Get auth token
-	// authTokenRaw, ok := sess.Get("token")
-	// if !ok {
-	// 	return status.INTERNAL, "", errors.New("session token not found")
-	// }
-	// authToken := authTokenRaw.(string)
-
-	// logger.Info("Login successful, updating session data...")
-	// sess.Init(sessions.InitData{
-	// 	Source:    "login",
-	// 	IsSecure:  true,
-	// 	UID:       123,
-	// 	Email:     "test@gmail.com",
-	// 	LoginName: req.LoginName,
-	// })
-
-	device, err := s.deviceRepo.GetDeviceByUIDAnDeviceUUID(ctx, user.ID, req.DeviceUUID)
+	// compare password
+	err = utils.DefaultHasher.Compare(req.RawPassword, user.Password)
 	if err != nil {
-		log.Fatalf("Failed to get device by UUID: %v", err)
+		logger.Info("Error comparing password: %v", err)
+		return status.LOGIN_WRONG_CREDENTIALS, nil, ErrInvalidCredentials
+	}
+
+	isTrustedDevice, err := s.deviceRepo.CheckTrustedDeviceByUID(ctx, user.ID, req.DeviceUUID)
+	if err != nil {
 		return status.INTERNAL, nil, err
 	}
-	if device != nil && device.IsVerified {
-		isSecure = true
-		needs2FA = false
-	} else {
+
+	if !isTrustedDevice {
 		isSecure = false
 		needs2FA = true
+		loginStatus = enum.LoginStatusTwoFactorRequired
+	}
+
+	// Get auth token
+	authTokenRaw, ok := sess.Get("token")
+	if !ok {
+		return status.FAIL, nil, errors.New("session token not found")
+	}
+	authToken := authTokenRaw.(string)
+
+	// Update session
+	logger.Info("Login successful, updating session data...")
+	sess.Init(sessions.InitData{
+		Source:    "login",
+		IsSecure:  isTrustedDevice,
+		UID:       user.ID,
+		Email:     user.Email,
+		LoginName: req.LoginName,
+	})
+
+	// Store login log
+	loginLogDTO := BuildCreateLoginLogDTO(user.ID, req.IpAddress, req.DeviceUUID, authToken, loginStatus)
+
+	err = s.repo.StoreLoginLog(ctx, loginLogDTO)
+	if err != nil {
+		logger.Info("Error storing login log: %v", err)
+		return status.INTERNAL, nil, err
 	}
 
 	res := &LoginRes{
-		IsSecure: isSecure,
-		Needs2FA: needs2FA,
-		User:     user,
+		IsSecure:    isSecure,
+		Needs2FA:    needs2FA,
+		User:        user,
+		LoginStatus: loginStatus,
 	}
 
 	return status.SUCCESS, res, nil

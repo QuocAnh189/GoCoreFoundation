@@ -14,6 +14,7 @@ import (
 type IRepository interface {
 	GetDeviceByDeviceUUID(ctx context.Context, deviceUUID string) (*Device, error)
 	GetDeviceByUIDAnDeviceUUID(ctx context.Context, uid string, deviceUUID string) (*Device, error)
+	CheckTrustedDeviceByUID(ctx context.Context, uid string, deviceUUID string) (bool, error)
 	StoreDevice(ctx context.Context, tx *sql.Tx, dto *CreateDeviceDTO) error
 	UpdateDevice(ctx context.Context, dto *UpdateDeviceDTO) error
 	DeleteDeviceByUID(ctx context.Context, tx *sql.Tx, uid string) error
@@ -88,6 +89,26 @@ func (r *Repository) GetDeviceByUIDAnDeviceUUID(ctx context.Context, uid string,
 	device := MapSchemaToDevice(&sqlDev)
 
 	return device, nil
+}
+
+func (r *Repository) CheckTrustedDeviceByUID(ctx context.Context, uid string, deviceUUID string) (bool, error) {
+	query := `
+		SELECT is_verified
+		FROM devices
+		WHERE uid = ? AND device_uuid = ? AND status = ?
+	`
+
+	result := r.db.QueryRow(ctx, nil, query, uid, deviceUUID, enum.StatusActive)
+	var isVerified bool
+	err := result.Scan(&isVerified)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return isVerified, nil
 }
 
 func (r *Repository) StoreDevice(ctx context.Context, tx *sql.Tx, dto *CreateDeviceDTO) error {

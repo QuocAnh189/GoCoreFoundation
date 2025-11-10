@@ -24,6 +24,8 @@ func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 		return "Le nom de famille est requis"
 	case status.USER_MISSING_EMAIL:
 		return "L'email est requis"
+	case status.USER_MISSING_PASSWORD:
+		return "Le mot de passe est requis"
 	case status.USER_INVALID_EMAIL:
 		return "Format d'email invalide"
 	case status.USER_EMAIL_ALREADY_EXISTS:

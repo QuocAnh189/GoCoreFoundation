@@ -22,6 +22,10 @@ func ValidateCreateUserRequest(req *CreateUserRequest) (status.Code, error) {
 		return status.USER_MISSING_EMAIL, ErrMissingEmail
 	}
 
+	if req.Password == "" {
+		return status.USER_MISSING_PASSWORD, ErrMissingPassword
+	}
+
 	if !validate.IsValidEmail(req.Email) {
 		return status.USER_INVALID_EMAIL, ErrInvalidEmail
 	}

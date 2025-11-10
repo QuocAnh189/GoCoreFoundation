@@ -34,6 +34,7 @@ func (c *Controller) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+	req.IpAddress = r.RemoteAddr
 	req.DeviceUUID = r.Header.Get("Device-UUID")
 	req.DeviceName = r.Header.Get("Device-Name")
 

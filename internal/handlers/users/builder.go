@@ -21,6 +21,7 @@ func BuildCreateUserDTO(req *CreateUserRequest) *CreateUserDTO {
 		Email:      req.Email,
 		Phone:      req.Phone,
 		Role:       role,
+		Password:   req.Password,
 	}
 }
 

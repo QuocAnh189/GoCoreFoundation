@@ -9,5 +9,8 @@ const (
 	StatusInactive EStatus = "INACTIVE"
 	StatusBanned   EStatus = "BANNED"
 
+	LoginStatusActive            ELoginStatus = "ACTIVE"
+	LoginStatusTwoFactorRequired ELoginStatus = "2FA_REQUIRED"
+
 	DefaultLang = "vn"
 )
