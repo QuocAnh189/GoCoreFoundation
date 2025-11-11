@@ -8,7 +8,6 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/pagination"
 )
 
 type Service struct {
@@ -23,12 +22,17 @@ func NewService(repo IRepository, deviceRepo device.IRepository) *Service {
 	}
 }
 
-func (s *Service) ListUsers(ctx context.Context, req *ListUserRequest) (status.Code, []*User, *pagination.Pagination, error) {
+func (s *Service) ListUsers(ctx context.Context, req *ListUserRequest) (status.Code, *ListUserResponse, error) {
 	result, err := s.repo.List(ctx, req)
 	if err != nil {
-		return status.INTERNAL, nil, nil, err
+		return status.INTERNAL, nil, err
 	}
-	return status.SUCCESS, result.Users, result.Pagination, nil
+
+	if result != nil && len(result.Items) == 0 {
+		result.Items = []*User{}
+	}
+
+	return status.SUCCESS, result, nil
 }
 
 func (s *Service) GetUserByLoginName(ctx context.Context, loginName string) (status.Code, *User, error) {

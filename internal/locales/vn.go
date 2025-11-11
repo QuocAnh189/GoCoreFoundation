@@ -48,6 +48,12 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 		return "Thiếu tham số bắt buộc"
 	case status.LOGIN_WRONG_CREDENTIALS:
 		return "Thông tin đăng nhập sai"
+	case status.BLOCK_MISSING_TYPE:
+		return "Thiếu loại chặn"
+	case status.BLOCK_INVALID_TYPE:
+		return fmt.Sprintf("Loại chặn không hợp lệ. Các trạng thái hợp lệ là: %v", args)
+	case status.BLOCK_MISSING_VALUE:
+		return "Thiếu giá trị chặn"
 	case status.SUCCESS:
 		return "Thành công"
 	default:

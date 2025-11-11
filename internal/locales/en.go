@@ -50,6 +50,12 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return "Missing required parameters"
 	case status.LOGIN_WRONG_CREDENTIALS:
 		return "Wrong login credentials"
+	case status.BLOCK_MISSING_TYPE:
+		return "Block type is required"
+	case status.BLOCK_INVALID_TYPE:
+		return fmt.Sprintf("Invalid block type. Valid statuses are: %v", args)
+	case status.BLOCK_MISSING_VALUE:
+		return "Block value is required"
 	case status.SUCCESS:
 		return "Success"
 	default:

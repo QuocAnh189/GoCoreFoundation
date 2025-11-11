@@ -12,5 +12,10 @@ const (
 	LoginStatusActive            ELoginStatus = "ACTIVE"
 	LoginStatusTwoFactorRequired ELoginStatus = "2FA_REQUIRED"
 
+	BlockTypeDevice EBlockType = "DEVICE"
+	BlockTypeEmail  EBlockType = "EMAIL"
+	BlockTypePhone  EBlockType = "PHONE"
+	BlockTypeIP     EBlockType = "IP"
+
 	DefaultLang = "vn"
 )

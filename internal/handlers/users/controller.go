@@ -32,15 +32,10 @@ func (u *Controller) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	statusCode, users, pagination, err := u.service.ListUsers(r.Context(), &req)
+	statusCode, res, err := u.service.ListUsers(r.Context(), &req)
 	if err != nil {
 		response.WriteJson(w, r.Context(), nil, err, statusCode)
 		return
-	}
-
-	res := &ListUserResponse{
-		Users:      users,
-		Pagination: pagination,
 	}
 
 	response.WriteJson(w, r.Context(), res, nil, statusCode)

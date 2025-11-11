@@ -212,7 +212,7 @@ func (r *Repository) List(ctx context.Context, req *ListUserRequest) (*ListUserR
 	}
 
 	return &ListUserResponse{
-		Users:      users,
+		Items:      users,
 		Pagination: pagination,
 	}, nil
 }

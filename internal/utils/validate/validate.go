@@ -12,7 +12,7 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
-func ValidatePhoneNumber(phone string) bool {
+func IsValidatePhoneNumber(phone string) bool {
 	r, e := regexp.Compile(`^\+?[\d\s()-]{7,20}$`)
 	if e != nil {
 		return false
@@ -35,6 +35,16 @@ func IsValidStatus(status enum.EStatus) bool {
 	validStatuses := []enum.EStatus{enum.StatusActive, enum.StatusInactive, enum.StatusBanned}
 	for _, validStatus := range validStatuses {
 		if status == validStatus {
+			return true
+		}
+	}
+	return false
+}
+
+func IsValidBlockType(blockType enum.EBlockType) bool {
+	validTypes := []enum.EBlockType{enum.BlockTypeIP, enum.BlockTypeEmail, enum.BlockTypePhone, enum.BlockTypeIP}
+	for _, validType := range validTypes {
+		if blockType == validType {
 			return true
 		}
 	}

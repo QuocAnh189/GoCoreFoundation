@@ -3,6 +3,7 @@ package approutes
 import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/app/resource"
 	appservices "github.com/QuocAnh189/GoCoreFoundation/internal/app/services"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/block"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/misc"
@@ -14,6 +15,10 @@ func SetUpHttpRoutes(server *root.Server, res *resource.AppResource, services *a
 	// misc
 	m := misc.NewController(res)
 	server.AddRoute("GET /misc/sessions/dump", m.HandleSessionDump)
+
+	// block
+	b := block.NewController(services.BlockService)
+	server.AddRoute("GET /blocks/list", b.HandleGetBlocks)
 
 	// login
 	l := login.NewController(res, services.LoginService)

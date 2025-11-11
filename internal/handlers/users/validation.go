@@ -30,7 +30,7 @@ func ValidateCreateUserRequest(req *CreateUserRequest) (status.Code, error) {
 		return status.USER_INVALID_EMAIL, ErrInvalidEmail
 	}
 
-	if !validate.ValidatePhoneNumber(req.Phone) {
+	if !validate.IsValidatePhoneNumber(req.Phone) {
 		return status.USER_INVALID_PHONE, ErrInvalidPhone
 	}
 
