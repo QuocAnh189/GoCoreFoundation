@@ -56,6 +56,14 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Invalid block type. Valid statuses are: %v", args)
 	case status.BLOCK_MISSING_VALUE:
 		return "Block value is required"
+	case status.OTP_MISSING_PURPOSE:
+		return "OTP purpose is required"
+	case status.OTP_INVALID_PURPOSE:
+		return fmt.Sprintf("Invalid OTP purpose. Valid purposes are: %v", args)
+	case status.OTP_MISSING_IDENTIFIER:
+		return "OTP identifier is required"
+	case status.OTP_MISSING_OTP_CODE:
+		return "OTP code is required"
 	case status.SUCCESS:
 		return "Success"
 	default:

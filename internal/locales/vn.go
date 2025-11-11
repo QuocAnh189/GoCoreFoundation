@@ -54,6 +54,14 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Loại chặn không hợp lệ. Các trạng thái hợp lệ là: %v", args)
 	case status.BLOCK_MISSING_VALUE:
 		return "Thiếu giá trị chặn"
+	case status.OTP_MISSING_PURPOSE:
+		return "Thiếu mục đích OTP"
+	case status.OTP_INVALID_PURPOSE:
+		return "Mục đích OTP không hợp lệ"
+	case status.OTP_MISSING_IDENTIFIER:
+		return "Thiếu định danh"
+	case status.OTP_MISSING_OTP_CODE:
+		return "Mã OTP bị thiếu"
 	case status.SUCCESS:
 		return "Thành công"
 	default:

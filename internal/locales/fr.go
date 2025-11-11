@@ -56,6 +56,14 @@ func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Type de bloc invalide. Statuts valides sont : %v", args)
 	case status.BLOCK_MISSING_VALUE:
 		return "La valeur du bloc est requise"
+	case status.OTP_MISSING_PURPOSE:
+		return "Le but de l'OTP est requis"
+	case status.OTP_INVALID_PURPOSE:
+		return "But OTP invalide"
+	case status.OTP_MISSING_IDENTIFIER:
+		return "L'identifiant est requis"
+	case status.OTP_MISSING_OTP_CODE:
+		return "Le code OTP est requis"
 	case status.SUCCESS:
 		return "Succès"
 	default:

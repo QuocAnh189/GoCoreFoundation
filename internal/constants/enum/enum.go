@@ -17,5 +17,9 @@ const (
 	BlockTypePhone  EBlockType = "PHONE"
 	BlockTypeIP     EBlockType = "IP"
 
+	OTPPurposeLogin2FA     EOTPPurpose = "LOGIN2FA"
+	OTPPurposeRegistration EOTPPurpose = "REGISTRATION"
+	OTPPurposeResetPass    EOTPPurpose = "RESET_PASSWORD"
+
 	DefaultLang = "vn"
 )

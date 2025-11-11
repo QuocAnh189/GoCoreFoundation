@@ -7,6 +7,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/misc"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/otp"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
@@ -37,4 +38,9 @@ func SetUpHttpRoutes(server *root.Server, res *resource.AppResource, services *a
 	server.AddRoute("POST /users/update", u.HandleUpdateUser)
 	server.AddRoute("POST /users/delete", u.HandleDeleteUser)
 	server.AddRoute("POST /users/force-delete", u.HandleForceDeleteUser)
+
+	// otp
+	o := otp.NewController(res, services.OTPService)
+	server.AddRoute("POST /otp/send", o.HandleSendOTP)
+	server.AddRoute("POST /otp/verify", o.HandleVerifyOTP)
 }

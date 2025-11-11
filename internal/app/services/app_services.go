@@ -10,6 +10,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/otp"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/mail"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
@@ -30,6 +31,7 @@ type ServiceContainer struct {
 	LoginService  *login.Service
 	UserService   *users.Service
 	DeviceService *device.Service
+	OTPService    *otp.Service
 	BlockService  *block.Service
 }
 
@@ -140,6 +142,10 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	blockRepo := block.NewRepository(res.Db)
 	var blockSvc = block.NewService(blockRepo)
 
+	log.Println("> otpSvc...")
+	otpRepo := otp.NewRepository(res.Db)
+	var otpSvc = otp.NewService(otpRepo)
+
 	svcs := ServiceContainer{
 		SessionManager:  sessionManager,
 		JwtHelper:       jwtHelper,
@@ -150,6 +156,7 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 		DeviceService: deviceSvc,
 		UserService:   userSvc,
 		BlockService:  blockSvc,
+		OTPService:    otpSvc,
 	}
 
 	return &svcs, nil
