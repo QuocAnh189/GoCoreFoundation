@@ -8,19 +8,19 @@ import (
 )
 
 type Block struct {
-	ID             string
-	Type           enum.EBlockType
-	Value          string
-	Reason         string
-	BlockedDt      time.Time
-	BlockedUntilDt *time.Time
+	ID             string          `json:"id"`
+	Type           enum.EBlockType `json:"type"`
+	Value          string          `json:"value"`
+	Reason         string          `json:"reason"`
+	BlockedDt      time.Time       `json:"blocked_dt"`
+	BlockedUntilDt *time.Time      `json:"blocked_until_dt"`
 }
 
 type CreateBlockReq struct {
-	Type     enum.EBlockType
-	Value    string
-	Duration time.Duration
-	Reason   string
+	Type     enum.EBlockType `json:"type"`
+	Value    string          `json:"value"`
+	Duration time.Duration   `json:"duration"` // in minutes
+	Reason   string          `json:"reason"`
 }
 
 type CreateBlockByValueReq struct {
