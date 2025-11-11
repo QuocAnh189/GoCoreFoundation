@@ -35,7 +35,7 @@ func ValidateVerifyOTPReq(req *VerifyOTPReq) (status.Code, error) {
 	}
 
 	if req.OTPCode == "" {
-		return status.OTP_MISSING_OTP_CODE, ErrMissingOTPCode
+		return status.OTP_MISSING_CODE, ErrMissingOTPCode
 	}
 
 	return status.SUCCESS, nil

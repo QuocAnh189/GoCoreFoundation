@@ -31,8 +31,8 @@ type ServiceContainer struct {
 	LoginService  *login.Service
 	UserService   *users.Service
 	DeviceService *device.Service
-	OTPService    *otp.Service
 	BlockService  *block.Service
+	OTPService    *otp.Service
 }
 
 const (
@@ -144,7 +144,7 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 
 	log.Println("> otpSvc...")
 	otpRepo := otp.NewRepository(res.Db)
-	var otpSvc = otp.NewService(otpRepo)
+	var otpSvc = otp.NewService(otpRepo, userSvc, blockSvc, mailSvc, smsSvc)
 
 	svcs := ServiceContainer{
 		SessionManager:  sessionManager,

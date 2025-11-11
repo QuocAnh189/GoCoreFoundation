@@ -17,17 +17,14 @@ type Block struct {
 }
 
 type CreateBlockReq struct {
-	Type   enum.EBlockType
-	Value  string
-	Reason string
+	Type     enum.EBlockType
+	Value    string
+	Duration time.Duration
+	Reason   string
 }
 
 type CreateBlockByValueReq struct {
-	Items []struct {
-		Value string
-		Type  enum.EBlockType
-	}
-	Reason string
+	Items []CreateBlockReq
 }
 
 type ListBlockRequest struct {

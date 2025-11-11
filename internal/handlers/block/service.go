@@ -45,10 +45,10 @@ func (s *Service) CreateBlock(ctx context.Context, block *CreateBlockReq) (statu
 	return status.SUCCESS, nil
 }
 
-func (s *Service) CreateBlockByValue(ctx context.Context, block *CreateBlockByValueReq) (status.Code, error) {
+func (s *Service) CreateMutilpleBlock(ctx context.Context, block *CreateBlockByValueReq) (status.Code, error) {
 	handler := func(tx *sql.Tx) error {
 		for _, item := range block.Items {
-			dto := BuildCreateBlockByValueDTO(item.Type, item.Value)
+			dto := BuildCeateBlockDTO(&item)
 
 			err := s.repo.StoreBlock(ctx, tx, dto)
 			if err != nil {

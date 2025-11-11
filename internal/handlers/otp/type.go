@@ -1,6 +1,25 @@
 package otp
 
-import "github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
+import (
+	"time"
+
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
+)
+
+type OTP struct {
+	ID             string           `json:"id"`
+	Purpose        enum.EOTPPurpose `json:"purpose"`
+	UID            string           `json:"uid"`
+	Identifier     string           `json:"identifier"`
+	DeviceUUID     string           `json:"device_uuid"`
+	DeviceName     string           `json:"device_name"`
+	GenOTPCount    int              `json:"gen_otp_cnt"`
+	VerifyOTPCount int              `json:"verify_otp_cnt"`
+	OTPCode        string           `json:"otp_code"`
+	OTPCreateDt    time.Time        `json:"otp_create_dt"`
+	OTPExpireDt    time.Time        `json:"otp_expire_dt"`
+	Status         enum.EOTPStatus  `json:"status"`
+}
 
 type SendOTPReq struct {
 	Purpose        enum.EOTPPurpose `json:"purpose"`

@@ -1,5 +1,5 @@
 CREATE TABLE `blocks` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` char(36) NOT NULL,
   `type` varchar(255) NOT NULL, -- DEVICE, EMAIL, PHONE, IP
   `value` varchar(255) NOT NULL,
   `reason` varchar(255) DEFAULT NULL, -- send max exceed otp

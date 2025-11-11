@@ -12,7 +12,7 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
-func IsValidatePhoneNumber(phone string) bool {
+func IsValidPhoneNumber(phone string) bool {
 	r, e := regexp.Compile(`^\+?[\d\s()-]{7,20}$`)
 	if e != nil {
 		return false

@@ -62,8 +62,18 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return fmt.Sprintf("Invalid OTP purpose. Valid purposes are: %v", args)
 	case status.OTP_MISSING_IDENTIFIER:
 		return "OTP identifier is required"
-	case status.OTP_MISSING_OTP_CODE:
+	case status.OTP_MISSING_CODE:
 		return "OTP code is required"
+	case status.OTP_INVALID_CODE:
+		return "Invalid OTP code"
+	case status.OTP_STILL_ACTIVE:
+		return "OTP is still active"
+	case status.OTP_EXCEED_MAX_SEND:
+		return "Exceeded maximum OTP send attempts"
+	case status.OTP_EXCEED_MAX_VERIFY:
+		return "Exceeded maximum OTP verify attempts"
+	case status.OTP_EXPIRED:
+		return "OTP has expired"
 	case status.SUCCESS:
 		return "Success"
 	default:

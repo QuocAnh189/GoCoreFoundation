@@ -14,7 +14,7 @@ import (
 
 type IRepository interface {
 	ListBlocks(ctx context.Context, req *ListBlockRequest) (*ListBlockResponse, error)
-	StoreBlock(ctx context.Context, tx *sql.Tx, block *CreateBlockDTO) error
+	StoreBlock(ctx context.Context, tx *sql.Tx, dto *CreateBlockDTO) error
 	StoreMultipleBlocks(ctx context.Context, handler db.HanderlerWithTx) error
 }
 
@@ -116,18 +116,18 @@ func (r *Repository) ListBlocks(ctx context.Context, req *ListBlockRequest) (*Li
 	}, nil
 }
 
-func (r *Repository) StoreBlock(ctx context.Context, tx *sql.Tx, block *CreateBlockDTO) error {
+func (r *Repository) StoreBlock(ctx context.Context, tx *sql.Tx, dto *CreateBlockDTO) error {
 	query := `
 		INSERT INTO blocks (id, type, value, reason, blocked_dt, blocked_until_dt, status)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
 	_, err := r.db.Exec(ctx, tx, query,
-		block.ID,
-		block.Type,
-		block.Value,
-		block.Reason,
+		dto.ID,
+		dto.Type,
+		dto.Value,
+		dto.Reason,
 		time.Now().UTC(),
-		time.Now().Add(time.Duration(block.Duration)*time.Minute).UTC(),
+		time.Now().Add(dto.Duration).UTC(),
 		enum.StatusActive,
 	)
 	if err != nil {

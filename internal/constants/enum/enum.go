@@ -21,5 +21,9 @@ const (
 	OTPPurposeRegistration EOTPPurpose = "REGISTRATION"
 	OTPPurposeResetPass    EOTPPurpose = "RESET_PASSWORD"
 
-	DefaultLang = "vn"
+	OTPStatusActive   EOTPStatus = "ACTIVE"
+	OTPStatusInactive EOTPStatus = "INACTIVE"
+	OTPStatusUsed     EOTPStatus = "USED"
+
+	DefaultLang = "en"
 )

@@ -62,8 +62,18 @@ func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 		return "But OTP invalide"
 	case status.OTP_MISSING_IDENTIFIER:
 		return "L'identifiant est requis"
-	case status.OTP_MISSING_OTP_CODE:
+	case status.OTP_MISSING_CODE:
 		return "Le code OTP est requis"
+	case status.OTP_INVALID_CODE:
+		return "Code OTP invalide"
+	case status.OTP_STILL_ACTIVE:
+		return "L'OTP est toujours actif"
+	case status.OTP_EXCEED_MAX_SEND:
+		return "Nombre maximum d'envois d'OTP dépassé"
+	case status.OTP_EXCEED_MAX_VERIFY:
+		return "Nombre maximum de vérifications d'OTP dépassé"
+	case status.OTP_EXPIRED:
+		return "L'OTP a expiré"
 	case status.SUCCESS:
 		return "Succès"
 	default:

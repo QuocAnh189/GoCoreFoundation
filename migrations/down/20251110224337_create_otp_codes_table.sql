@@ -1,2 +1,2 @@
 -- migration down
-DROP TABLE IF EXISTS opt_codes;
+DROP TABLE IF EXISTS otp_codes;

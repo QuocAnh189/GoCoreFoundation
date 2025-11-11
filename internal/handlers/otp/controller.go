@@ -35,14 +35,13 @@ func (c *Controller) HandleSendOTP(w http.ResponseWriter, r *http.Request) {
 	req.DeviceName = r.Header.Get("Device-Name")
 
 	ctx := r.Context()
-
-	statusCode, _, err := c.service.SendOTP(ctx, &req)
+	statusCode, res, err := c.service.SendOTP(ctx, &req)
 	if err != nil {
 		response.WriteJson(w, ctx, nil, err, statusCode, GetArgsByStatatus(statusCode)...)
 		return
 	}
 
-	response.WriteJson(w, ctx, req, nil, 200)
+	response.WriteJson(w, ctx, res, nil, 200)
 }
 
 // POST - /otp/verify
@@ -58,12 +57,11 @@ func (c *Controller) HandleVerifyOTP(w http.ResponseWriter, r *http.Request) {
 	req.DeviceName = r.Header.Get("Device-Name")
 
 	ctx := r.Context()
-
-	statusCode, _, err := c.service.VerifyOTP(ctx, &req)
+	statusCode, res, err := c.service.VerifyOTP(ctx, &req)
 	if err != nil {
 		response.WriteJson(w, ctx, nil, err, statusCode)
 		return
 	}
 
-	response.WriteJson(w, ctx, req, nil, 200)
+	response.WriteJson(w, ctx, res, nil, 200)
 }

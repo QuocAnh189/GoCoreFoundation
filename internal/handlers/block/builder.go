@@ -9,20 +9,11 @@ func BuildCeateBlockDTO(req *CreateBlockReq) *CreateBlockDTO {
 	id, _ := uuid.GenerateUUIDV7()
 
 	return &CreateBlockDTO{
-		ID:     id,
-		Type:   req.Type,
-		Value:  req.Value,
-		Reason: req.Reason,
-	}
-}
-
-func BuildCreateBlockByValueDTO(blockType enum.EBlockType, value string) *CreateBlockDTO {
-	id, _ := uuid.GenerateUUIDV7()
-
-	return &CreateBlockDTO{
-		ID:    id,
-		Type:  blockType,
-		Value: value,
+		ID:       id,
+		Type:     req.Type,
+		Value:    req.Value,
+		Reason:   req.Reason,
+		Duration: req.Duration,
 	}
 }
 

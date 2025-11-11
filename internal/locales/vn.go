@@ -60,8 +60,18 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 		return "Mục đích OTP không hợp lệ"
 	case status.OTP_MISSING_IDENTIFIER:
 		return "Thiếu định danh"
-	case status.OTP_MISSING_OTP_CODE:
+	case status.OTP_MISSING_CODE:
 		return "Mã OTP bị thiếu"
+	case status.OTP_INVALID_CODE:
+		return "Mã OTP không hợp lệ"
+	case status.OTP_STILL_ACTIVE:
+		return "OTP vẫn còn hiệu lực"
+	case status.OTP_EXCEED_MAX_SEND:
+		return "Vượt quá số lần gửi OTP tối đa"
+	case status.OTP_EXCEED_MAX_VERIFY:
+		return "Vượt quá số lần xác minh OTP tối đa"
+	case status.OTP_EXPIRED:
+		return "OTP đã hết hạn"
 	case status.SUCCESS:
 		return "Thành công"
 	default:
