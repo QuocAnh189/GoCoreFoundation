@@ -101,7 +101,7 @@ func (s *Service) CreateUser(ctx context.Context, req *CreateUserRequest) (statu
 				continue // Skip empty aliases
 			}
 
-			createAliasDTO := BuildAliasDTO(createUserDTO.ID, createUserDTO.Email)
+			createAliasDTO := BuildAliasDTO(createUserDTO.ID, aka)
 			if err := s.repo.StoreUserAlias(ctx, tx, createAliasDTO); err != nil {
 				return fmt.Errorf("failed to store user alias in transaction: %v", err)
 			}
