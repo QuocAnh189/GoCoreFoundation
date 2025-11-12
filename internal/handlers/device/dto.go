@@ -17,3 +17,8 @@ type UpdateDeviceDTO struct {
 	DevicePushToken *string
 	IsVerified      *bool
 }
+
+type MarkVerifiedDeviceDTO struct {
+	UID        string
+	DeviceUUID string
+}

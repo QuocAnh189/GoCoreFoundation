@@ -76,6 +76,8 @@ func GetMessageENFromStatus(statusCode status.Code, args ...any) string {
 		return "Exceeded maximum OTP verify attempts"
 	case status.OTP_EXPIRED:
 		return "OTP has expired"
+	case status.OTP_NOT_ALLOWED:
+		return "OTP action not allowed"
 	case status.SUCCESS:
 		return "Success"
 	default:

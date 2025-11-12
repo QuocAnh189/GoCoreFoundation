@@ -64,3 +64,12 @@ func (s *Service) UpdateDevice(ctx context.Context, req *UpdateDeviceReq) (statu
 
 	return status.SUCCESS, nil
 }
+
+func (s *Service) MarkVerifiedDevice(ctx context.Context, uid string, deviceUUID string) (status.Code, error) {
+	err := s.repo.MarkVerifiedDeviceByUIDAndDeviceUUID(ctx, uid, deviceUUID)
+	if err != nil {
+		return status.INTERNAL, err
+	}
+
+	return status.SUCCESS, nil
+}

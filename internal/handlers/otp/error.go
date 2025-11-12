@@ -17,4 +17,7 @@ var (
 	ErrOTPExpired      = errors.New("your code has expired, please request a new one to continue")
 	ErrExceedMaxVerify = errors.New("you have exceeded the maximum number of verification attempts. Please request a new code to continue")
 	ErrUserBlocked     = errors.New("you will be blocked")
+
+	// valid
+	ErrOTPNotAllowed = errors.New("otp action not allowed")
 )

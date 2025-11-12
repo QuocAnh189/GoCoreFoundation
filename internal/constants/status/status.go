@@ -51,4 +51,5 @@ const (
 	OTP_EXCEED_MAX_SEND    Code = 1407
 	OTP_EXCEED_MAX_VERIFY  Code = 1408
 	OTP_EXPIRED            Code = 1409
+	OTP_NOT_ALLOWED        Code = 1410
 )

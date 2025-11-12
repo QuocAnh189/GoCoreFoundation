@@ -144,7 +144,7 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 
 	log.Println("> otpSvc...")
 	otpRepo := otp.NewRepository(res.Db)
-	var otpSvc = otp.NewService(otpRepo, userSvc, blockSvc, mailSvc, smsSvc)
+	var otpSvc = otp.NewService(otpRepo, userSvc, blockSvc, deviceSvc, mailSvc, smsSvc)
 
 	svcs := ServiceContainer{
 		SessionManager:  sessionManager,

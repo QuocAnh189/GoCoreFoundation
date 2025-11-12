@@ -1,6 +1,7 @@
 package otp
 
 import (
+	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/validate"
 )
@@ -39,4 +40,16 @@ func ValidateVerifyOTPReq(req *VerifyOTPReq) (status.Code, error) {
 	}
 
 	return status.SUCCESS, nil
+}
+
+func IsAllowedSendOTP(purpose enum.EOTPPurpose, uid *string) bool {
+	switch purpose {
+	case enum.OTPPurposeLogin2FA:
+		if uid == nil {
+			return false
+		}
+		return true
+	default:
+		return true
+	}
 }

@@ -30,6 +30,7 @@ func NewRepository(db db.IDatabase) IRepository {
 
 type sqlOTP struct {
 	ID             string
+	UID            sql.NullString
 	Purpose        string
 	Identifier     string
 	DeviceUUID     string
@@ -53,14 +54,14 @@ func (r *Repository) CreateOTP(ctx context.Context, dto *CreateOTPDTO) error {
 
 func (r *Repository) GetLatestOTP(ctx context.Context, purpose enum.EOTPPurpose, identifier, deviceUUID string) (*OTP, error) {
 	query := `
-		SELECT id, purpose, identifier, device_uuid, device_name, otp_code, otp_create_dt, otp_expire_dt, gen_otp_cnt, verify_otp_cnt, status
+		SELECT id, uid, purpose, identifier, device_uuid, device_name, otp_code, otp_create_dt, otp_expire_dt, gen_otp_cnt, verify_otp_cnt, status
 		FROM otp_codes
 		WHERE purpose = ? AND identifier = ? AND device_uuid = ? AND status = ?
 		ORDER BY otp_create_dt DESC
 		LIMIT 1`
 	var sqlOTP sqlOTP
 	row := r.db.QueryRow(ctx, nil, query, purpose, identifier, deviceUUID, enum.OTPStatusActive)
-	err := row.Scan(&sqlOTP.ID, &sqlOTP.Purpose, &sqlOTP.Identifier, &sqlOTP.DeviceUUID, &sqlOTP.DeviceName,
+	err := row.Scan(&sqlOTP.ID, &sqlOTP.UID, &sqlOTP.Purpose, &sqlOTP.Identifier, &sqlOTP.DeviceUUID, &sqlOTP.DeviceName,
 		&sqlOTP.OTPCode, &sqlOTP.OTPCreateDt, &sqlOTP.OTPExpireDt, &sqlOTP.GenOTPCount, &sqlOTP.VerifyOTPCount, &sqlOTP.Status)
 	if err == sql.ErrNoRows {
 		return nil, nil

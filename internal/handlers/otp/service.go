@@ -8,6 +8,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/block"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/mail"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
@@ -23,26 +24,29 @@ const (
 )
 
 type Service struct {
-	repo     IRepository
-	userSvc  *users.Service
-	blockSvc *block.Service
-	mailSvc  *mail.Service
-	smsSvc   *sms.Service
+	repo      IRepository
+	userSvc   *users.Service
+	blockSvc  *block.Service
+	deviceSvc *device.Service
+	mailSvc   *mail.Service
+	smsSvc    *sms.Service
 }
 
 func NewService(
 	repo IRepository,
 	userSvc *users.Service,
 	blockSvc *block.Service,
+	deviceSvc *device.Service,
 	mailSvc *mail.Service,
 	smsSvc *sms.Service,
 ) *Service {
 	return &Service{
-		repo:     repo,
-		userSvc:  userSvc,
-		blockSvc: blockSvc,
-		mailSvc:  mailSvc,
-		smsSvc:   smsSvc,
+		repo:      repo,
+		userSvc:   userSvc,
+		blockSvc:  blockSvc,
+		deviceSvc: deviceSvc,
+		mailSvc:   mailSvc,
+		smsSvc:    smsSvc,
 	}
 }
 
@@ -53,6 +57,20 @@ func (s *Service) SendOTP(ctx context.Context, req *SendOTPReq) (status.Code, *S
 	// Validate request
 	if statusCode, err := ValidateSendOTPReq(req); err != nil {
 		return statusCode, nil, err
+	}
+
+	// get user by identifier
+	statusCode, user, err := s.userSvc.GetUserByLoginName(ctx, req.IdentifierName)
+	if err != nil {
+		return statusCode, nil, err
+	}
+	if user != nil {
+		UID = &user.ID
+	}
+
+	// Check if sending OTP is allowed
+	if !IsAllowedSendOTP(req.Purpose, UID) {
+		return status.OTP_NOT_ALLOWED, nil, ErrOTPNotAllowed
 	}
 
 	// Check session limits
@@ -74,7 +92,7 @@ func (s *Service) SendOTP(ctx context.Context, req *SendOTPReq) (status.Code, *S
 			}
 		}
 
-		statusCode, err := s.CreateBlock(ctx, req, "exceed max send otp attempts", time.Minute*10)
+		statusCode, err := s.CreateBlock(ctx, latestOTP, "exceed max send otp attempts", time.Minute*10)
 		if err != nil {
 			return statusCode, nil, err
 		}
@@ -106,15 +124,6 @@ func (s *Service) SendOTP(ctx context.Context, req *SendOTPReq) (status.Code, *S
 		if err := s.smsSvc.SendSmsToPhone(req.IdentifierName, body); err != nil {
 			return status.INTERNAL, nil, err
 		}
-	}
-
-	// get user by identifier
-	statusCode, user, err := s.userSvc.GetUserByLoginName(ctx, req.IdentifierName)
-	if err != nil {
-		return statusCode, nil, err
-	}
-	if user != nil {
-		UID = &user.ID
 	}
 
 	// Handle session row
@@ -167,11 +176,16 @@ func (s *Service) VerifyOTP(ctx context.Context, req *VerifyOTPReq) (status.Code
 			return status.INTERNAL, nil, err
 		}
 		if count >= MaxOTPsPerSession-1 {
-			fmt.Println("you will be blocked")
 			updateDTO := BuildUpdateOTPDTO(otp.ID, otp.VerifyOTPCount, enum.OTPStatusInactive)
 			if err := s.repo.UpdateOTP(ctx, updateDTO); err != nil {
 				return status.INTERNAL, nil, err
 			}
+
+			statusCode, err := s.CreateBlock(ctx, otp, "exceed max verify otp attempts", time.Minute*10)
+			if err != nil {
+				return statusCode, nil, err
+			}
+
 		}
 		return status.OTP_EXCEED_MAX_VERIFY, nil, ErrExceedMaxVerify
 	}
@@ -190,19 +204,30 @@ func (s *Service) VerifyOTP(ctx context.Context, req *VerifyOTPReq) (status.Code
 	if err := s.repo.UpdateOTP(ctx, updateDTO); err != nil {
 		return status.INTERNAL, nil, err
 	}
+
+	// update device as verified
+	if req.Purpose == enum.OTPPurposeLogin2FA {
+		statusCode, err := s.deviceSvc.MarkVerifiedDevice(ctx, otp.UID, otp.DeviceUUID)
+		if err != nil {
+			return statusCode, nil, err
+		}
+	}
+
 	return status.SUCCESS, &VerifyOTPRes{Status: "verified otp successfully"}, nil
 }
 
-func (s *Service) CreateBlock(ctx context.Context, req *SendOTPReq, reason string, duration time.Duration) (status.Code, error) {
+func (s *Service) CreateBlock(ctx context.Context, otp *OTP, reason string, duration time.Duration) (status.Code, error) {
 	listBlockReq := block.CreateBlockByValueReq{}
+	if otp.UID == "" {
+		listBlockReq.Items = append(listBlockReq.Items, block.CreateBlockReq{
+			Value:    otp.Identifier,
+			Type:     enum.BlockTypePhone,
+			Duration: duration,
+			Reason:   reason,
+		})
+	}
 	listBlockReq.Items = append(listBlockReq.Items, block.CreateBlockReq{
-		Value:    req.IdentifierName,
-		Type:     enum.BlockTypePhone,
-		Duration: duration,
-		Reason:   reason,
-	})
-	listBlockReq.Items = append(listBlockReq.Items, block.CreateBlockReq{
-		Value:    req.DeviceUUID,
+		Value:    otp.DeviceUUID,
 		Type:     enum.BlockTypeDevice,
 		Duration: duration,
 		Reason:   reason,

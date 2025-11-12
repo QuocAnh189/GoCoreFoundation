@@ -74,6 +74,8 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 		return "Vượt quá số lần xác minh OTP tối đa"
 	case status.OTP_EXPIRED:
 		return "OTP đã hết hạn"
+	case status.OTP_NOT_ALLOWED:
+		return "Hành động OTP không được phép"
 	case status.SUCCESS:
 		return "Thành công"
 	default:

@@ -35,6 +35,7 @@ func BuildUpdateOTPDTO(id string, verifyCount int, status enum.EOTPStatus) *Upda
 func MapSchemaToOTP(sqlOTP *sqlOTP) *OTP {
 	return &OTP{
 		ID:             sqlOTP.ID,
+		UID:            sqlOTP.UID.String,
 		Purpose:        enum.EOTPPurpose(sqlOTP.Purpose),
 		Identifier:     sqlOTP.Identifier,
 		DeviceUUID:     sqlOTP.DeviceUUID,

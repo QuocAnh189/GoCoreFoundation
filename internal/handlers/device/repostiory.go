@@ -17,6 +17,7 @@ type IRepository interface {
 	CheckTrustedDeviceByUID(ctx context.Context, uid string, deviceUUID string) (bool, error)
 	StoreDevice(ctx context.Context, tx *sql.Tx, dto *CreateDeviceDTO) error
 	UpdateDevice(ctx context.Context, dto *UpdateDeviceDTO) error
+	MarkVerifiedDeviceByUIDAndDeviceUUID(ctx context.Context, uid string, deviceUUID string) error
 	DeleteDeviceByUID(ctx context.Context, tx *sql.Tx, uid string) error
 	ForceDeleteDeviceByUID(ctx context.Context, tx *sql.Tx, uid string) error
 }
@@ -148,6 +149,23 @@ func (r *Repository) UpdateDevice(ctx context.Context, dto *UpdateDeviceDTO) err
 		dto.DevicePushToken,
 		dto.IsVerified,
 		dto.ID,
+		enum.StatusActive,
+	)
+
+	return err
+}
+
+func (r *Repository) MarkVerifiedDeviceByUIDAndDeviceUUID(ctx context.Context, uid string, deviceUUID string) error {
+	query := `
+		UPDATE devices
+		SET is_verified = ?
+		WHERE uid = ? AND device_uuid = ? AND status = ?
+	`
+
+	_, err := r.db.Exec(ctx, nil, query,
+		true,
+		uid,
+		deviceUUID,
 		enum.StatusActive,
 	)
 
