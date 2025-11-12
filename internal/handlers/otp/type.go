@@ -29,7 +29,9 @@ type SendOTPReq struct {
 }
 
 type SendOtpRes struct {
-	Status string `json:"status"`
+	Status        string `json:"status"`
+	RemainingTime int64  `json:"remaining_time,omitempty"` // in seconds
+	BlockDuration int64  `json:"block_duration,omitempty"` // in seconds
 }
 
 type VerifyOTPReq struct {
@@ -41,5 +43,6 @@ type VerifyOTPReq struct {
 }
 
 type VerifyOTPRes struct {
-	Status string `json:"status"`
+	Status        string `json:"status"`
+	RemainingTime int64  `json:"remaining_time"` // in seconds
 }

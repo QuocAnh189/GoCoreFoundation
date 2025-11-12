@@ -20,4 +20,9 @@ var (
 
 	// valid
 	ErrOTPNotAllowed = errors.New("otp action not allowed")
+
+	// block
+	ErrDeviceBlocked      = errors.New("device is blocked")
+	ErrDevicePhoneBlocked = errors.New("device and phone number are blocked")
+	ErrDeviceEmailBlocked = errors.New("device and email are blocked")
 )

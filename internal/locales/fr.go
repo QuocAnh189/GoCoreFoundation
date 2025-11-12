@@ -69,15 +69,21 @@ func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 	case status.OTP_INVALID_CODE:
 		return "Code OTP invalide"
 	case status.OTP_STILL_ACTIVE:
-		return "L'OTP est toujours actif"
+		return fmt.Sprintf("L'OTP est toujours actif, veuillez réessayer après %d secondes", args...)
 	case status.OTP_EXCEED_MAX_SEND:
 		return "Nombre maximum d'envois d'OTP dépassé"
 	case status.OTP_EXCEED_MAX_VERIFY:
-		return "Nombre maximum de vérifications d'OTP dépassé"
+		return fmt.Sprintf("Nombre maximum de tentatives de vérification OTP dépassé, veuillez attendre %d secondes pour redemander un OTP", args...)
 	case status.OTP_EXPIRED:
 		return "L'OTP a expiré"
 	case status.OTP_NOT_ALLOWED:
 		return "Action OTP non autorisée"
+	case status.OTP_BLOCK_DEVICE:
+		return fmt.Sprintf("Pour des raisons de sécurité, cet appareil a été bloqué pendant %d minutes", args...)
+	case status.OTP_BLOCK_DEVICE_PHONE:
+		return fmt.Sprintf("Pour des raisons de sécurité, cet appareil et ce numéro de téléphone ont été bloqués pendant %d minutes", args...)
+	case status.OTP_BLOCK_DEVICE_EMAIL:
+		return fmt.Sprintf("Pour des raisons de sécurité, cet appareil et cet email ont été bloqués pendant %d minutes", args...)
 	case status.SUCCESS:
 		return "Succès"
 	default:

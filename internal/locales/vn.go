@@ -67,15 +67,21 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 	case status.OTP_INVALID_CODE:
 		return "Mã OTP không hợp lệ"
 	case status.OTP_STILL_ACTIVE:
-		return "OTP vẫn còn hiệu lực"
+		return fmt.Sprintf("OTP vẫn còn hiệu lực, vui lòng thử lại sau %d giây", args...)
 	case status.OTP_EXCEED_MAX_SEND:
 		return "Vượt quá số lần gửi OTP tối đa"
 	case status.OTP_EXCEED_MAX_VERIFY:
-		return "Vượt quá số lần xác minh OTP tối đa"
+		return fmt.Sprintf("Vượt quá số lần xác minh OTP tối đa, vui lòng chờ %d giây để yêu cầu OTP lại", args...)
 	case status.OTP_EXPIRED:
 		return "OTP đã hết hạn"
 	case status.OTP_NOT_ALLOWED:
 		return "Hành động OTP không được phép"
+	case status.OTP_BLOCK_DEVICE:
+		return "Vì lý do bảo mật, thiết bị này đã bị chặn trong vòng %d phút"
+	case status.OTP_BLOCK_DEVICE_PHONE:
+		return "Vì lý do bảo mật, thiết bị và số điện thoại đã bị chặn trong vòng %d phút"
+	case status.OTP_BLOCK_DEVICE_EMAIL:
+		return "Vì lý do bảo mật, thiết bị và email đã bị chặn trong vòng %d phút"
 	case status.SUCCESS:
 		return "Thành công"
 	default:

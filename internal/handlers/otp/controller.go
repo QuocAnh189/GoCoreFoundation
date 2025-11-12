@@ -37,7 +37,7 @@ func (c *Controller) HandleSendOTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	statusCode, res, err := c.service.SendOTP(ctx, &req)
 	if err != nil {
-		response.WriteJson(w, ctx, nil, err, statusCode, GetArgsByStatatus(statusCode)...)
+		response.WriteJson(w, ctx, nil, err, statusCode, GetArgsByStatatus(statusCode, res, nil)...)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (c *Controller) HandleVerifyOTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	statusCode, res, err := c.service.VerifyOTP(ctx, &req)
 	if err != nil {
-		response.WriteJson(w, ctx, nil, err, statusCode)
+		response.WriteJson(w, ctx, nil, err, statusCode, GetArgsByStatatus(statusCode, nil, res)...)
 		return
 	}
 

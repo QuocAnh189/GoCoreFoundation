@@ -52,7 +52,7 @@ func IsValidBlockType(blockType enum.EBlockType) bool {
 }
 
 func IsValidOTPPurpose(purpose enum.EOTPPurpose) bool {
-	validPurposes := []enum.EOTPPurpose{enum.OTPPurposeLogin2FA, enum.OTPPurposeRegistration, enum.OTPPurposeResetPass}
+	validPurposes := []enum.EOTPPurpose{enum.OTPPurposeLogin2FA, enum.OTPPurposeSignUp, enum.OTPPurposeResetPass}
 	for _, validPurpose := range validPurposes {
 		if purpose == validPurpose {
 			return true

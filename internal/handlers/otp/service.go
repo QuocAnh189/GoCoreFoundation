@@ -106,7 +106,12 @@ func (s *Service) SendOTP(ctx context.Context, req *SendOTPReq) (status.Code, *S
 		return status.INTERNAL, nil, err
 	}
 	if latestOTP != nil && time.Now().Before(latestOTP.OTPExpireDt) {
-		return status.OTP_STILL_ACTIVE, nil, ErrOTPStillActive
+		remainingTime := int64(time.Until(latestOTP.OTPExpireDt).Seconds())
+
+		return status.OTP_STILL_ACTIVE, &SendOtpRes{
+			Status:        "Otp still active",
+			RemainingTime: remainingTime,
+		}, ErrOTPStillActive
 	}
 
 	// Generate OTP code
@@ -175,7 +180,7 @@ func (s *Service) VerifyOTP(ctx context.Context, req *VerifyOTPReq) (status.Code
 		if err != nil {
 			return status.INTERNAL, nil, err
 		}
-		if count >= MaxOTPsPerSession-1 {
+		if count >= MaxOTPsPerSession {
 			updateDTO := BuildUpdateOTPDTO(otp.ID, otp.VerifyOTPCount, enum.OTPStatusInactive)
 			if err := s.repo.UpdateOTP(ctx, updateDTO); err != nil {
 				return status.INTERNAL, nil, err
@@ -187,7 +192,12 @@ func (s *Service) VerifyOTP(ctx context.Context, req *VerifyOTPReq) (status.Code
 			}
 
 		}
-		return status.OTP_EXCEED_MAX_VERIFY, nil, ErrExceedMaxVerify
+
+		remainingTime := int64(time.Until(otp.OTPExpireDt).Seconds())
+		return status.OTP_EXCEED_MAX_VERIFY, &VerifyOTPRes{
+			Status:        "exceed max verify attempts",
+			RemainingTime: remainingTime,
+		}, ErrExceedMaxVerify
 	}
 
 	// Verify OTP code
@@ -238,7 +248,15 @@ func (s *Service) CreateBlock(ctx context.Context, otp *OTP, reason string, dura
 		return statusCode, err
 	}
 
-	return status.SUCCESS, nil
+	if otp.UID == "" {
+		if validate.IsValidEmail(otp.Identifier) {
+			return status.OTP_BLOCK_DEVICE_EMAIL, ErrDeviceEmailBlocked
+		} else if validate.IsValidPhoneNumber(otp.Identifier) {
+			return status.OTP_BLOCK_DEVICE_PHONE, ErrDevicePhoneBlocked
+		}
+	}
+
+	return status.OTP_BLOCK_DEVICE, ErrDeviceBlocked
 }
 
 func (s *Service) DeleteOTPByStatus(ctx context.Context, status enum.EOTPStatus) error {

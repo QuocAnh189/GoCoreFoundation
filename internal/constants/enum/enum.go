@@ -17,9 +17,9 @@ const (
 	BlockTypePhone  EBlockType = "PHONE"
 	BlockTypeIP     EBlockType = "IP"
 
-	OTPPurposeLogin2FA     EOTPPurpose = "LOGIN2FA"
-	OTPPurposeRegistration EOTPPurpose = "REGISTRATION"
-	OTPPurposeResetPass    EOTPPurpose = "RESET_PASSWORD"
+	OTPPurposeLogin2FA  EOTPPurpose = "LOGIN2FA"
+	OTPPurposeSignUp    EOTPPurpose = "SIGNUP"
+	OTPPurposeResetPass EOTPPurpose = "RESET_PASSWORD"
 
 	OTPStatusActive   EOTPStatus = "ACTIVE"
 	OTPStatusInactive EOTPStatus = "INACTIVE"
