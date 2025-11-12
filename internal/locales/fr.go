@@ -44,6 +44,8 @@ func GetMessageFRFromStatus(statusCode status.Code, args ...any) string {
 		return "Paramètres de l'appareil invalides"
 	case status.DEVICE_MISSING_UUID:
 		return "L'UUID de l'appareil est requis"
+	case status.DEVICE_BLOCKED:
+		return "L'appareil est bloqué"
 	case status.DEVICE_MISSING_NAME:
 		return "Le nom de l'appareil est requis"
 	case status.LOGIN_MISSING_PARAMETERS:

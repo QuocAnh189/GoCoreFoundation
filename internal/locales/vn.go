@@ -42,6 +42,8 @@ func GetMessageVNFromStatus(statusCode status.Code, args ...any) string {
 		return "Tham số thiết bị không hợp lệ"
 	case status.DEVICE_MISSING_UUID:
 		return "Thiếu UUID thiết bị"
+	case status.DEVICE_BLOCKED:
+		return "Thiết bị đã bị chặn"
 	case status.DEVICE_MISSING_NAME:
 		return "Thiếu tên thiết bị"
 	case status.LOGIN_MISSING_PARAMETERS:

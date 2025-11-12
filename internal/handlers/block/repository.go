@@ -14,8 +14,10 @@ import (
 
 type IRepository interface {
 	ListBlocks(ctx context.Context, req *ListBlockRequest) (*ListBlockResponse, error)
+	GetBlockByValue(ctx context.Context, value string) (*Block, error)
 	StoreBlock(ctx context.Context, tx *sql.Tx, dto *CreateBlockDTO) error
 	StoreMultipleBlocks(ctx context.Context, handler db.HanderlerWithTx) error
+	ForceDeleteBlockByValue(ctx context.Context, tx *sql.Tx, id string) error
 }
 
 type Repository struct {
@@ -116,6 +118,28 @@ func (r *Repository) ListBlocks(ctx context.Context, req *ListBlockRequest) (*Li
 	}, nil
 }
 
+func (r *Repository) GetBlockByValue(ctx context.Context, value string) (*Block, error) {
+	query := `
+		SELECT id, type, value, reason, blocked_dt, blocked_until_dt
+		FROM blocks
+		WHERE value = ? AND deleted_dt IS NULL
+		LIMIT 1
+	`
+	row := r.db.QueryRow(ctx, nil, query, value)
+
+	var sb sqlBlock
+	if err := row.Scan(
+		&sb.ID, &sb.Type, &sb.Value, &sb.Reason, &sb.BlockedDt, &sb.BlockedUntilDt,
+	); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // No block found
+		}
+		return nil, fmt.Errorf("failed to get block by value: %v", err)
+	}
+
+	return MapSchemaToBlock(&sb), nil
+}
+
 func (r *Repository) StoreBlock(ctx context.Context, tx *sql.Tx, dto *CreateBlockDTO) error {
 	query := `
 		INSERT INTO blocks (id, type, value, reason, blocked_dt, blocked_until_dt, status)
@@ -141,6 +165,18 @@ func (r *Repository) StoreMultipleBlocks(ctx context.Context, handler db.Handerl
 
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (r *Repository) ForceDeleteBlockByValue(ctx context.Context, tx *sql.Tx, value string) error {
+	query := `
+		DELETE FROM blocks
+		WHERE value = ?
+	`
+	_, err := r.db.Exec(ctx, tx, query, value)
+	if err != nil {
+		return fmt.Errorf("failed to force delete block by value: %v", err)
 	}
 	return nil
 }

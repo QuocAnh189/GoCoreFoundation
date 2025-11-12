@@ -3,6 +3,7 @@ package block
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 )
@@ -30,6 +31,21 @@ func (s *Service) ListUsers(ctx context.Context, req *ListBlockRequest) (status.
 	return status.SUCCESS, result, nil
 }
 
+func (s *Service) CheckBlockByValue(ctx context.Context, value string) (status.Code, *Block, error) {
+	block, err := s.repo.GetBlockByValue(ctx, value)
+	if err != nil {
+		return status.INTERNAL, nil, err
+	}
+
+	if block != nil && block.BlockedUntilDt != nil {
+		if time.Now().UTC().Before(*block.BlockedUntilDt) {
+			return status.DEVICE_BLOCKED, block, ErrDeviceBlocked
+		}
+	}
+
+	return status.SUCCESS, block, nil
+}
+
 func (s *Service) CreateBlock(ctx context.Context, block *CreateBlockReq) (status.Code, error) {
 	if statusCode, err := ValidateCreateBlockReq(block); err != nil {
 		return statusCode, err
@@ -48,9 +64,14 @@ func (s *Service) CreateBlock(ctx context.Context, block *CreateBlockReq) (statu
 func (s *Service) CreateMutilpleBlock(ctx context.Context, block *CreateBlockByValueReq) (status.Code, error) {
 	handler := func(tx *sql.Tx) error {
 		for _, item := range block.Items {
+			err := s.repo.ForceDeleteBlockByValue(ctx, tx, item.Value)
+			if err != nil {
+				return err
+			}
+
 			dto := BuildCeateBlockDTO(&item)
 
-			err := s.repo.StoreBlock(ctx, tx, dto)
+			err = s.repo.StoreBlock(ctx, tx, dto)
 			if err != nil {
 				return err
 			}
