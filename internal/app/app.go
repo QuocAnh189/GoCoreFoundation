@@ -128,9 +128,11 @@ func (a *App) setupJobs(_ *root.Server, appService *appservices.ServiceContainer
 	// Register jobs with the job manager
 	testJob := jobs.NewTestJob()
 	userJob := jobs.NewUserJob(appService.UserService)
+	otpJob := jobs.NewOTPJob(appService.OTPService)
 
 	a.JobManager.RegisterJob(testJob)
 	a.JobManager.RegisterJob(userJob)
+	a.JobManager.RegisterJob(otpJob)
 
 	// Start the job manager
 	a.JobManager.Start()

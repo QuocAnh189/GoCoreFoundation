@@ -240,3 +240,7 @@ func (s *Service) CreateBlock(ctx context.Context, otp *OTP, reason string, dura
 
 	return status.SUCCESS, nil
 }
+
+func (s *Service) DeleteOTPByStatus(ctx context.Context, status enum.EOTPStatus) error {
+	return s.repo.ForceDeleteOTPByStatus(ctx, status)
+}

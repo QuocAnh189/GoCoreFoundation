@@ -16,6 +16,7 @@ type IRepository interface {
 	InvalidateOldSession(ctx context.Context, purpose enum.EOTPPurpose, identifier, deviceUUID string) error
 	CountOTPsInSession(ctx context.Context, purpose enum.EOTPPurpose, identifier, deviceUUID string, sessionStart time.Time) (int, error)
 	UpdateOTPForSession(ctx context.Context, dto *CreateOTPDTO) error
+	ForceDeleteOTPByStatus(ctx context.Context, status enum.EOTPStatus) error
 }
 
 type Repository struct {
@@ -114,5 +115,13 @@ func (r *Repository) UpdateOTPForSession(ctx context.Context, dto *CreateOTPDTO)
 		WHERE id = ?`
 	_, err := r.db.Exec(ctx, nil, query, dto.OTPCode, dto.OTPCreateDt, dto.OTPExpireDt, dto.GenOTPCount,
 		dto.VerifyOTPCount, dto.Status, dto.ID)
+	return err
+}
+
+func (r *Repository) ForceDeleteOTPByStatus(ctx context.Context, status enum.EOTPStatus) error {
+	query := `
+		DELETE FROM otp_codes
+		WHERE status = ?`
+	_, err := r.db.Exec(ctx, nil, query, status)
 	return err
 }
