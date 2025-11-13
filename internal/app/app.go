@@ -93,7 +93,7 @@ func (a *App) Init() error {
 }
 
 func (a *App) Start() error {
-	log.Println("Server running on port " + a.Resource.Env.ServerEnv.Port)
+	log.Println("Server running on port " + a.Resource.HostConfig.ServerPort)
 	return a.Server.Start()
 }
 

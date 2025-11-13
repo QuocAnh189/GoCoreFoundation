@@ -62,6 +62,8 @@ func NewEnv(envpath string) (*Env, error) {
 		RootSessionDriver:     getConfig("ROOT_SESSION_DRIVER"),
 		SerializedSessionFile: getConfig("SERIALIZED_SESSION_FILE"),
 	}
+
+	println("SharedKeyBytes", result.SharedKeyBytes[0])
 	return result, nil
 }
 

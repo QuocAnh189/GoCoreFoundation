@@ -26,7 +26,7 @@ func (j *DeleteOTPJob) Name() string {
 }
 
 func (j *DeleteOTPJob) TickInterval() int {
-	return 1
+	return 30
 }
 
 func (j *DeleteOTPJob) Run(ctx context.Context) error {

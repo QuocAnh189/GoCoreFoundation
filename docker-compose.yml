@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: server
+    # container_name: server
     platform: linux/amd64
     build:
       context: .
@@ -31,11 +31,24 @@ services:
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
       TWILIO_FROM_PHONE_NUMBER: ${TWILIO_FROM_PHONE_NUMBER}
       TWILIO_MESSAGING_SERVICE_SID: ${TWILIO_MESSAGING_SERVICE_SID}
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080" # Expose port 8080 for internal Docker networking
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    scale: 3
     restart: unless-stopped
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    networks:
+      app-network:
+        aliases:
+          - server-1
+          - server-2
+          - server-3
 
   mysql:
     image: mysql:8.0
@@ -49,7 +62,7 @@ services:
     ports:
       - "33066:3306"
     volumes:
-      - mysql_data:/var/lib/mysql # Persist database files
+      - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
       test:
@@ -59,11 +72,33 @@ services:
           "ping",
           "-h",
           "localhost",
-          "-p${MYSQL_ROOT_PASSWORD}",
+          "-u",
+          "${DB_USER}",
+          "-p${DB_PASSWORD}",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "70:80"
+    volumes:
+      - ./wrk/nginx/nginx.docker.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - server
+      # # turn on if you use health for server contianer
+      # server:
+      #   condition: service_healthy
+    networks:
+      - app-network
 
 volumes:
   mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
