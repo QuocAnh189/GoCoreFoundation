@@ -4,6 +4,12 @@
 run:
 	@go run ./cmd/server
 
+docker-compose-up:
+	docker-compose --env-file .env.docker up --build -d
+
+docker-compose-down:
+	docker-compose --env-file .env.docker down
+
 # Get list of .sql files from the up/ directory, sorted from old to new
 MIGRATE_UP_FILES := $(shell ls migrations/up/*.sql | sort)
 
@@ -62,6 +68,32 @@ migrate-down-docker:
 	fi
 	@echo "✅ All DOWN migrations completed."
 
+## migrate-up: Run all pending migrations to the database (aws).
+migrate-up-aws:
+	@echo "🚀 Starting UP migrations from /migrations/up..."
+	@if [ -z "$(MIGRATE_UP_FILES)" ]; then \
+		echo "No UP migration files found in migrations/up."; \
+	else \
+		for file in $(MIGRATE_UP_FILES); do \
+			echo "--> Running UP: $$file"; \
+			./bin/run_migration_file_aws.sh $$file; \
+		done; \
+	fi
+	@echo "✅ All UP migrations completed."
+
+## migrate-down: Run all migrations to the database.
+migrate-down-aws:
+	@echo "⏪ Starting DOWN migrations from /migrations/down..."
+	@if [ -z "$(MIGRATE_DOWN_FILES)" ]; then \
+		echo "No DOWN migration files found in migrations/down."; \
+	else \
+		for file in $(MIGRATE_DOWN_FILES); do \
+			echo "--> Running DOWN: $$file"; \
+			./bin/run_migration_file_aws.sh $$file; \
+		done; \
+	fi
+	@echo "✅ All DOWN migrations completed."
+
 ## create-migration NAME=<name>: Create a new migration file.
 migrate-create:
 	@if [ -z "$(NAME)" ]; then \
@@ -70,8 +102,27 @@ migrate-create:
 	fi
 	./bin/create_migration.sh $(NAME)
 
-docker-compose-up:
-	docker-compose --env-file .env.docker up --build -d
 
-docker-compose-down:
-	docker-compose --env-file .env.docker down
+tidy:
+	go mod tidy
+
+# build current or local machine
+build: tidy
+	go build -o dist/server ./cmd/server
+
+# build AWS EC2 ARM64
+build-ec2-arm: tidy
+	GOOS=linux GOARCH=arm64 go build -o dist/server ./cmd/server
+
+
+# build local, deploy 
+# chmod +x bin/remote-deploy
+deploy-ec2-remote: build-ec2-arm
+	@echo "make[$@] build and deploy from mac to ec2..."
+	./bin/remote-deploy
+	@echo "make[$@] done"
+
+
+# chmod +x bin/login.sh
+login:
+	@./bin/login.sh
