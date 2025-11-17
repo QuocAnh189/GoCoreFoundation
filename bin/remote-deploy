@@ -14,7 +14,7 @@ fi
 
 hostIn=$1
 
-DEST_DIR="/apps/core-foundation"
+DEST_DIR="/apps/core"
 
 SSH_KEY=$(cat .env.ec2-credentials | grep SSH_KEY | cut -d '=' -f 2)
 USER=$(cat .env.ec2-credentials | grep AWS_USER | cut -d '=' -f 2)
@@ -74,12 +74,21 @@ if [ $? -eq 0 ]; then
 fi
 
 echo "* Syncing remote files..."
-rsync -avz -R \
-    -O \
-    --progress \
-    --no-perms \
-    -e "ssh -i $SSH_KEY" \
-    migrations/ assets/views/ assets/images/ pre-deploy/ post-deploy/ dist/server ${USER}@${HOST}:${DEST_DIR}
+# First: upload .env.ec2 → .env on the server (this overwrites any old .env)
+rsync -avz --progress -e "ssh -i $SSH_KEY" \
+    .env.ec2 "${USER}@${HOST}:${DEST_DIR}/.env"
+echo "* .env.ec2 successfully deployed as .env on the server"
+
+# Then: sync all other files/folders as before
+rsync -avz -R --progress --no-perms -e "ssh -i $SSH_KEY" \
+    hmac.key \
+    migrations/ \
+    keys/ \
+    pre-deploy/ \
+    post-deploy/ \
+    dist/server \
+    "${USER}@${HOST}:${DEST_DIR}/"
+
 if [ $? -ne 0 ]; then
     echo "Error: Failed to deploy"
     exit 1

@@ -1,4 +1,4 @@
-.PHONY: migrate-up migrate-down migrate-up-docker migrate-down-docker create-migration run
+.PHONY: migrate-up migrate-down migrate-up-docker migrate-down-docker create-migration run init-deploy
 
 ## run: Run the app.
 run:
@@ -111,13 +111,19 @@ build: tidy
 	go build -o dist/server ./cmd/server
 
 # build AWS EC2 ARM64
-build-ec2-arm: tidy
-	GOOS=linux GOARCH=arm64 go build -o dist/server ./cmd/server
+build-ec2: tidy
+	GOOS=linux GOARCH=amd64 go build -o dist/server ./cmd/server
+
+# chmod +x bin/init_deploy.sh
+init-deploy:
+	@echo "make[$@] init deploy from mac to ec2..."
+	./bin/init_deploy.sh
+	@echo "make[$@] done"
 
 
 # build local, deploy 
 # chmod +x bin/remote-deploy
-deploy-ec2-remote: build-ec2-arm
+deploy-ec2-remote: build-ec2
 	@echo "make[$@] build and deploy from mac to ec2..."
 	./bin/remote-deploy
 	@echo "make[$@] done"
