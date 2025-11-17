@@ -1,4 +1,4 @@
-.PHONY: migrate-up migrate-down migrate-up-docker migrate-down-docker create-migration run init-deploy
+.PHONY: run docker-compose-up docker-compose-down migrate-up migrate-down migrate-up-docker migrate-down-docker migrate-up-aws create-migration migrate-down-aws init-deploy deploy-ec2-remote login
 
 ## run: Run the app.
 run:
@@ -102,7 +102,6 @@ migrate-create:
 	fi
 	./bin/create_migration.sh $(NAME)
 
-
 tidy:
 	go mod tidy
 
@@ -120,14 +119,11 @@ init-deploy:
 	./bin/init_deploy.sh
 	@echo "make[$@] done"
 
-
-# build local, deploy 
 # chmod +x bin/remote-deploy
 deploy-ec2-remote: build-ec2
 	@echo "make[$@] build and deploy from mac to ec2..."
 	./bin/remote-deploy
 	@echo "make[$@] done"
-
 
 # chmod +x bin/login.sh
 login:
