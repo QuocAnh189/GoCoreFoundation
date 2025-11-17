@@ -14,7 +14,7 @@ fi
 
 hostIn=$1
 
-DEST_DIR="/apps/core_foudation"
+DEST_DIR="/apps/core-foundation"
 
 SSH_KEY=$(cat .env.ec2-credentials | grep SSH_KEY | cut -d '=' -f 2)
 USER=$(cat .env.ec2-credentials | grep AWS_USER | cut -d '=' -f 2)
