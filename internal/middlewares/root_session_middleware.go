@@ -8,14 +8,14 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/response"
-	"github.com/QuocAnh189/GoCoreFoundation/root/sessionprovider"
+	session_provider "github.com/QuocAnh189/GoCoreFoundation/root/sessionprovider"
 )
 
 // GexSessionMiddleware is a unified middleware that handles session management using a SessionProvider.
 // It retrieves the session from the provider, handles auto-refresh notifications,
 // and wraps the response writer to capture the response body.
 func RootSessionMiddleware(
-	sessionProvider sessionprovider.SessionProvider,
+	sessionProvider session_provider.SessionProvider,
 	sessionContextKey sessions.SessionRequestContextKey,
 ) func(http.Handler) http.Handler {
 

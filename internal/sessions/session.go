@@ -5,7 +5,7 @@ import (
 
 	"maps"
 
-	"github.com/QuocAnh189/GoCoreFoundation/root/session"
+	root_session "github.com/QuocAnh189/GoCoreFoundation/root/session"
 )
 
 const (
@@ -13,11 +13,11 @@ const (
 )
 
 type AppSession struct {
-	RootSession *session.InMemorySession
+	RootSession *root_session.InMemorySession
 }
 
 func NewSession() *AppSession {
-	rootSess := session.NewInMemorySession()
+	rootSess := root_session.NewInMemorySession()
 	return &AppSession{RootSession: rootSess}
 }
 

@@ -1,4 +1,4 @@
-package sessionprovider
+package session_provider
 
 import (
 	"net/http"

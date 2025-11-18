@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/QuocAnh189/GoCoreFoundation/root/session"
+	root_session "github.com/QuocAnh189/GoCoreFoundation/root/session"
 )
 
 type SessionRequestContextKey string
@@ -31,7 +31,7 @@ func GetRequestSession(r *http.Request) *AppSession {
 		return nil
 	}
 
-	storer, ok := val.(session.SessionStorer)
+	storer, ok := val.(root_session.SessionStorer)
 	if !ok {
 		return nil
 	}
@@ -45,16 +45,16 @@ func GetRequestSession(r *http.Request) *AppSession {
 }
 
 type SessionManager struct {
-	SessionContainer session.Container
+	SessionContainer root_session.Container
 }
 
 func NewSessionManager() *SessionManager {
 	return &SessionManager{
-		SessionContainer: *session.NewContainer(),
+		SessionContainer: *root_session.NewContainer(),
 	}
 }
 
-func (m *SessionManager) Container() *session.Container {
+func (m *SessionManager) Container() *root_session.Container {
 	return &m.SessionContainer
 }
 

@@ -17,14 +17,14 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
 	"github.com/QuocAnh189/GoCoreFoundation/pkg/mailer"
 	"github.com/QuocAnh189/GoCoreFoundation/root/jwt"
-	rootSession "github.com/QuocAnh189/GoCoreFoundation/root/session"
-	"github.com/QuocAnh189/GoCoreFoundation/root/sessionprovider"
+	root_session "github.com/QuocAnh189/GoCoreFoundation/root/session"
+	session_provider "github.com/QuocAnh189/GoCoreFoundation/root/sessionprovider"
 )
 
 type ServiceContainer struct {
 	// Root resouces
 	SessionManager  *sessions.SessionManager
-	SessionProvider sessionprovider.SessionProvider
+	SessionProvider session_provider.SessionProvider
 	JwtHelper       jwt.JwtHelper
 
 	HealthService *health.Service
@@ -61,21 +61,21 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 
 	// Build the session provider
 	log.Println("> sessionProvider...")
-	var sessionProvider sessionprovider.SessionProvider
+	var sessionProvider session_provider.SessionProvider
 	{
-		defaultSessFactory := func() rootSession.SessionStorer {
+		defaultSessFactory := func() root_session.SessionStorer {
 			// Create the basic session that all new sessions are based on
 			return sessions.NewSession()
 		}
 		if env.RootSessionDriver == "xwt" {
-			sessionProvider = sessionprovider.NewXwtSessionProvider(
+			sessionProvider = session_provider.NewXwtSessionProvider(
 				sessionManager.Container(),
 				jwtHelper,
 				defaultSessFactory,
 				sessionTTL,
 			)
 		} else {
-			sessionProvider = sessionprovider.NewJwtSessionProvider(
+			sessionProvider = session_provider.NewJwtSessionProvider(
 				sessionManager.Container(),
 				jwtHelper,
 				defaultSessFactory,
