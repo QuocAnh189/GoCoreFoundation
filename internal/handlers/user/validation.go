@@ -1,4 +1,4 @@
-package users
+package user
 
 import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"

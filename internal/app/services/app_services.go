@@ -11,7 +11,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/health"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/otp"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/user"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/mail"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
@@ -29,7 +29,7 @@ type ServiceContainer struct {
 
 	HealthService *health.Service
 	LoginService  *login.Service
-	UserService   *users.Service
+	UserService   *user.Service
 	DeviceService *device.Service
 	BlockService  *block.Service
 	OTPService    *otp.Service
@@ -131,8 +131,8 @@ func SetUpAppServices(res *resource.AppResource) (*ServiceContainer, error) {
 	var deviceSvc = device.NewService(deviceRepo)
 
 	log.Println("> userSvc...")
-	userRepo := users.NewRepository(res.Db)
-	var userSvc = users.NewService(userRepo, deviceRepo)
+	userRepo := user.NewRepository(res.Db)
+	var userSvc = user.NewService(userRepo, deviceRepo)
 
 	log.Println("> loginSvc...")
 	loginRepo := login.NewRepository(res.Db)

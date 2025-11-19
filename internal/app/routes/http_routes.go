@@ -8,7 +8,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/login"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/misc"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/otp"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/user"
 	"github.com/QuocAnh189/GoCoreFoundation/root"
 )
 
@@ -30,7 +30,7 @@ func SetUpHttpRoutes(server *root.Server, res *resource.AppResource, services *a
 	server.AddRoute("GET /healths/ping", h.HandlePing)
 
 	//user
-	u := users.NewController(res, services.UserService)
+	u := user.NewController(res, services.UserService)
 	server.AddRoute("GET /users/list", u.HandleGetUsers)
 	server.AddRoute("GET /users/{id}", u.HandleGetUser)
 	server.AddRoute("GET /users/profile", u.HandleGetProfile)

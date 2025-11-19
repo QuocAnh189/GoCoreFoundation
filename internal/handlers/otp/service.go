@@ -9,7 +9,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/block"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/user"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/mail"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/services/sms"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils/random"
@@ -25,7 +25,7 @@ const (
 
 type Service struct {
 	repo      IRepository
-	userSvc   *users.Service
+	userSvc   *user.Service
 	blockSvc  *block.Service
 	deviceSvc *device.Service
 	mailSvc   *mail.Service
@@ -34,7 +34,7 @@ type Service struct {
 
 func NewService(
 	repo IRepository,
-	userSvc *users.Service,
+	userSvc *user.Service,
 	blockSvc *block.Service,
 	deviceSvc *device.Service,
 	mailSvc *mail.Service,

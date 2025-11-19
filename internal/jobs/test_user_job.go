@@ -6,16 +6,16 @@ import (
 	"time"
 
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/user"
 )
 
 type UserJob struct {
 	name    string
 	id      int
-	userSvc *users.Service
+	userSvc *user.Service
 }
 
-func NewUserJob(userSvc *users.Service) *UserJob {
+func NewUserJob(userSvc *user.Service) *UserJob {
 	return &UserJob{
 		name:    "user-job",
 		id:      2,
@@ -35,7 +35,7 @@ func (j *UserJob) Run(ctx context.Context) error {
 	now := time.Now()
 	log.Printf("[%s] [id=%d] %s", j.name, j.id, now)
 
-	data := &users.CreateUserRequest{
+	data := &user.CreateUserRequest{
 		FirstName: "John",
 		LastName:  "Doe",
 		Phone:     "1234567890",

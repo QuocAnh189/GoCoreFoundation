@@ -7,7 +7,7 @@ import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/status"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/device"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/user"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/sessions"
 	"github.com/QuocAnh189/GoCoreFoundation/internal/utils"
 	appctx "github.com/QuocAnh189/GoCoreFoundation/internal/utils/context"
@@ -15,11 +15,11 @@ import (
 
 type Service struct {
 	repo       IRepository
-	userRepo   users.IRepository
+	userRepo   user.IRepository
 	deviceRepo device.IRepository
 }
 
-func NewService(repo IRepository, userRepo users.IRepository, deviceRepo device.IRepository) *Service {
+func NewService(repo IRepository, userRepo user.IRepository, deviceRepo device.IRepository) *Service {
 	return &Service{
 		repo:       repo,
 		userRepo:   userRepo,

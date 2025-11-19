@@ -2,7 +2,7 @@ package login
 
 import (
 	"github.com/QuocAnh189/GoCoreFoundation/internal/constants/enum"
-	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/users"
+	"github.com/QuocAnh189/GoCoreFoundation/internal/handlers/user"
 )
 
 type LoginLog struct {
@@ -23,7 +23,7 @@ type LoginReq struct {
 }
 
 type LoginRes struct {
-	User        *users.User       `json:"user"`
+	User        *user.User        `json:"user"`
 	Needs2FA    bool              `json:"needs_2fa"`
 	IsSecure    bool              `json:"is_secure"`
 	LoginStatus enum.ELoginStatus `json:"login_status"`
